@@ -9,6 +9,9 @@ export interface Project {
   image: string;
   theme: 'light' | 'dark';
   bgColor: string;
+  status: 'published' | 'draft';
+  gallery?: string[];
+  details?: { title: string; content: string }[];
 }
 
 export interface ChatMessage {

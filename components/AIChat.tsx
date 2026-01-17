@@ -38,6 +38,7 @@ export const AIChat = () => {
         Bio: ${DEVELOPER_INFO.bio}
         Role: ${DEVELOPER_INFO.role}
         Skills: ${DEVELOPER_INFO.skills.join(', ')}
+        Services Offered: ${DEVELOPER_INFO.services.join(', ')}
         Location: ${DEVELOPER_INFO.location}
         Contact: ${DEVELOPER_INFO.email}
         
