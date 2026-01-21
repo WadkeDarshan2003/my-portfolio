@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -8,6 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
     <script>
       tailwind.config = {
+        darkMode: 'class',
         theme: {
           extend: {
             fontFamily: {
@@ -21,6 +23,33 @@
               'pastel-4': '#FFFBEB', // Amber 50
               'pastel-5': '#ECFEFF', // Cyan 50
               'pastel-6': '#F8FAFC', // Slate 50
+            },
+            animation: {
+              'fade-in-down': 'fadeInDown 0.8s ease-out forwards',
+              'fade-in-up': 'fadeInUp 0.8s ease-out forwards',
+              'float-slow': 'float 8s ease-in-out infinite',
+              'float-medium': 'float 5s ease-in-out infinite',
+              'float-fast': 'float 3s ease-in-out infinite',
+              'spin-slow': 'spin 15s linear infinite',
+              'spin-reverse-slow': 'spinReverse 20s linear infinite',
+            },
+            keyframes: {
+              fadeInDown: {
+                '0%': { opacity: '0', transform: 'translate(-50%, -20px)' },
+                '100%': { opacity: '1', transform: 'translate(-50%, 0)' },
+              },
+              fadeInUp: {
+                '0%': { opacity: '0', transform: 'translateY(20px)' },
+                '100%': { opacity: '1', transform: 'translateY(0)' },
+              },
+              float: {
+                '0%, 100%': { transform: 'translateY(0) rotate(0deg)' },
+                '50%': { transform: 'translateY(-20px) rotate(2deg)' },
+              },
+              spinReverse: {
+                'from': { transform: 'rotate(360deg)' },
+                'to': { transform: 'rotate(0deg)' },
+              }
             }
           }
         }
@@ -42,6 +71,22 @@
         overflow-x: hidden;
         overflow-y: scroll;
       }
+      
+      /* HIDE DEFAULT CURSOR FOR CUSTOM CURSOR */
+      html, body, * {
+        cursor: none !important;
+      }
+
+      /* 3D Transform Utilities */
+      .perspective-1000 {
+        perspective: 1000px;
+      }
+      .transform-style-3d {
+        transform-style: preserve-3d;
+      }
+      .backface-hidden {
+        backface-visibility: hidden;
+      }
     </style>
   <script type="importmap">
 {
@@ -55,8 +100,9 @@
 }
 </script>
 </head>
-  <body class="bg-stone-50 text-slate-800 antialiased">
+  <body class="bg-stone-50 text-slate-800 antialiased dark:bg-black dark:text-neutral-100 transition-colors duration-300">
     <div id="root"></div>
     <script type="module" src="/index.tsx"></script>
   </body>
 </html>
+    

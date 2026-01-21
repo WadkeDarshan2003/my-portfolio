@@ -1,3 +1,4 @@
+
 import { Project } from "./types";
 
 export const TECH_LINKS: Record<string, string> = {
@@ -22,6 +23,36 @@ export const TECH_LINKS: Record<string, string> = {
 export const getTechUrl = (tech: string) => {
   return TECH_LINKS[tech] || `https://www.geeksforgeeks.org/?s=${encodeURIComponent(tech)}`;
 };
+
+// Original Services mapped to Icons
+export const SERVICES_WITH_ICONS = [
+  { title: "Mobile Applications", icon: "Smartphone" },
+  { title: "Windows Applications", icon: "Monitor" },
+  { title: "CMS Systems", icon: "Database" },
+  { title: "Portfolio Websites", icon: "Layout" },
+  { title: "Business Web Presence", icon: "Globe" },
+  { title: "ERP Solutions", icon: "Server" },
+  { title: "To-Do Applications", icon: "CheckSquare" }
+];
+
+// Original Skills mapped to SimpleIcons Slugs
+export const STACK_LOGOS = [
+  { name: "React", slug: "react" },
+  { name: "Node.js", slug: "nodedotjs" },
+  { name: "Express.js", slug: "express" },
+  { name: "MongoDB", slug: "mongodb" },
+  { name: "TypeScript", slug: "typescript" },
+  { name: "React Native", slug: "react" }, // Moved here to separate from React
+  { name: "Generative AI", slug: "google" }, // Using Google as proxy for GenAI/Gemini
+  { name: "Firebase", slug: "firebase" },
+  { name: "SQL", slug: "mysql" }, // Using MySQL as generic SQL logo
+  { name: "GitLab", slug: "gitlab" },
+  { name: "GitHub", slug: "github" },
+  { name: "WordPress", slug: "wordpress" },
+  { name: "CSS", slug: "css3" },
+  { name: "Tailwind CSS", slug: "tailwindcss" },
+  { name: "Framer Motion", slug: "framer" }
+];
 
 export const DEVELOPER_INFO = {
   name: "Darshan Wadke",

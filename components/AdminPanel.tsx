@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Project } from '../types';
 import { Plus, Trash2, Save, Layout, Monitor, Edit3, ArrowLeft, Upload, X, Image as ImageIcon, Menu, PanelLeftClose, PanelLeftOpen, CheckCircle, CircleDashed } from 'lucide-react';
@@ -117,7 +118,7 @@ export const AdminPanel = ({ projects, onAdd, onUpdate, onDelete, onExit }: Admi
 
   const handleGalleryUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
-      const files = Array.from(e.target.files);
+      const files = Array.from(e.target.files) as File[];
       const newImages: string[] = [];
       for (const file of files) {
         try {

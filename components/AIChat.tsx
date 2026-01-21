@@ -72,27 +72,27 @@ export const AIChat = () => {
     <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end">
       {/* Chat Window */}
       {isOpen && (
-        <div className="mb-4 w-80 md:w-96 bg-white rounded-2xl shadow-2xl border border-slate-100 overflow-hidden flex flex-col animate-fade-in-up transition-all duration-300 transform origin-bottom-right">
+        <div className="mb-4 w-80 md:w-96 bg-white dark:bg-neutral-900 rounded-2xl shadow-2xl border border-slate-100 dark:border-neutral-800 overflow-hidden flex flex-col animate-fade-in-up transition-all duration-300 transform origin-bottom-right">
           {/* Header */}
-          <div className="bg-slate-800 p-4 flex justify-between items-center text-white">
+          <div className="bg-slate-800 dark:bg-black p-4 flex justify-between items-center text-white">
             <div className="flex items-center gap-2">
               <Sparkles size={16} className="text-yellow-300" />
               <span className="font-medium text-sm">Ask about {DEVELOPER_INFO.name}</span>
             </div>
-            <button onClick={() => setIsOpen(false)} className="hover:bg-slate-700 p-1 rounded transition-colors">
+            <button onClick={() => setIsOpen(false)} className="hover:bg-slate-700 dark:hover:bg-neutral-900 p-1 rounded transition-colors">
               <X size={18} />
             </button>
           </div>
 
           {/* Messages */}
-          <div className="h-80 overflow-y-auto p-4 bg-stone-50 space-y-4">
+          <div className="h-80 overflow-y-auto p-4 bg-stone-50 dark:bg-neutral-950 space-y-4">
             {messages.map((msg, idx) => (
               <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                 <div 
                   className={`max-w-[85%] p-3 text-sm rounded-xl leading-relaxed ${
                     msg.role === 'user' 
                       ? 'bg-slate-800 text-white rounded-tr-none' 
-                      : 'bg-white text-slate-700 border border-slate-200 shadow-sm rounded-tl-none'
+                      : 'bg-white dark:bg-neutral-800 text-slate-700 dark:text-neutral-100 border border-slate-200 dark:border-neutral-700 shadow-sm rounded-tl-none'
                   }`}
                 >
                   {msg.text}
@@ -101,9 +101,9 @@ export const AIChat = () => {
             ))}
             {isLoading && (
                <div className="flex justify-start">
-                 <div className="bg-white p-3 rounded-xl rounded-tl-none border border-slate-200 shadow-sm flex items-center gap-2">
-                   <Loader2 size={16} className="animate-spin text-slate-400" />
-                   <span className="text-xs text-slate-400">Thinking...</span>
+                 <div className="bg-white dark:bg-neutral-800 p-3 rounded-xl rounded-tl-none border border-slate-200 dark:border-neutral-700 shadow-sm flex items-center gap-2">
+                   <Loader2 size={16} className="animate-spin text-slate-400 dark:text-neutral-300" />
+                   <span className="text-xs text-slate-400 dark:text-neutral-300">Thinking...</span>
                  </div>
                </div>
             )}
@@ -111,19 +111,19 @@ export const AIChat = () => {
           </div>
 
           {/* Input */}
-          <div className="p-3 bg-white border-t border-slate-100 flex gap-2">
+          <div className="p-3 bg-white dark:bg-neutral-900 border-t border-slate-100 dark:border-neutral-800 flex gap-2">
             <input
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSend()}
               placeholder="Ask about my skills..."
-              className="flex-1 px-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-200 transition-all text-slate-700"
+              className="flex-1 px-3 py-2 text-sm bg-slate-50 dark:bg-neutral-950 border border-slate-200 dark:border-neutral-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-200 dark:focus:ring-neutral-700 transition-all text-slate-700 dark:text-neutral-200"
             />
             <button 
               onClick={handleSend}
               disabled={isLoading || !input.trim()}
-              className="p-2 bg-slate-800 text-white rounded-lg hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="p-2 bg-slate-800 dark:bg-neutral-800 text-white rounded-lg hover:bg-slate-700 dark:hover:bg-neutral-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               <Send size={18} />
             </button>
@@ -134,7 +134,7 @@ export const AIChat = () => {
       {/* Toggle Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className={`p-4 rounded-full shadow-lg transition-all duration-300 hover:scale-105 flex items-center justify-center ${isOpen ? 'bg-slate-200 text-slate-600 rotate-90' : 'bg-slate-800 text-white'}`}
+        className={`p-4 rounded-full shadow-lg transition-all duration-300 hover:scale-105 flex items-center justify-center ${isOpen ? 'bg-slate-200 text-slate-600 rotate-90 dark:bg-neutral-800 dark:text-neutral-200' : 'bg-slate-800 text-white dark:bg-neutral-800'}`}
       >
         {isOpen ? <X size={24} /> : <MessageSquare size={24} />}
       </button>
