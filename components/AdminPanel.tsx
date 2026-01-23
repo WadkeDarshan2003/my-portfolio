@@ -1,11 +1,12 @@
 
 import React, { useState } from 'react';
 import { Project } from '../types';
-import { Plus, Trash2, Save, Layout, Monitor, Edit3, ArrowLeft, Upload, X, Image as ImageIcon, Menu, PanelLeftClose, PanelLeftOpen, Rocket, CircleDashed } from 'lucide-react';
+import { Plus, Trash2, Save, Layout, Monitor, Edit3, ArrowLeft, Upload, X, Image as ImageIcon, Menu, PanelLeftClose, PanelLeftOpen, Rocket, CircleDashed, Loader2 } from 'lucide-react';
 import { ProjectCard } from './ProjectPair';
 import { ProjectDetail } from './ProjectDetail';
 import { Toast, useToast } from './Toast';
 import { CustomCursor } from './CustomCursor';
+import { uploadFile } from '../src/services/storageService';
 
 interface AdminPanelProps {
   projects: Project[];
@@ -50,6 +51,7 @@ export const AdminPanel = ({ projects, onAdd, onUpdate, onDelete, onExit }: Admi
   const [formData, setFormData] = useState<Project>(EMPTY_PROJECT);
   const [viewMode, setViewMode] = useState<'edit' | 'preview-card' | 'preview-page'>('edit');
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isUploading, setIsUploading] = useState(false);
   const toast = useToast();
 
   // Load project into form
@@ -100,24 +102,19 @@ export const AdminPanel = ({ projects, onAdd, onUpdate, onDelete, onExit }: Admi
     setFormData({ ...formData, [field]: arr });
   };
 
-  // Convert File to Base64
-  const readFileAsDataURL = (file: File): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result as string);
-      reader.onerror = reject;
-      reader.readAsDataURL(file);
-    });
-  };
-
   const handleMainImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
       try {
-        const base64Url = await readFileAsDataURL(file);
-        setFormData({ ...formData, image: base64Url });
+        setIsUploading(true);
+        const path = `projects/${Date.now()}_${file.name}`;
+        const url = await uploadFile(file, path);
+        setFormData({ ...formData, image: url });
+        toast.success("Main image uploaded!");
       } catch (err) {
-        toast.error("Failed to read file");
+        toast.error("Failed to upload image");
+      } finally {
+        setIsUploading(false);
       }
     }
   };
@@ -125,19 +122,26 @@ export const AdminPanel = ({ projects, onAdd, onUpdate, onDelete, onExit }: Admi
   const handleGalleryUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       const files = Array.from(e.target.files) as File[];
-      const newImages: string[] = [];
-      for (const file of files) {
-        try {
-          const base64 = await readFileAsDataURL(file);
-          newImages.push(base64);
-        } catch (err) {
-          console.error("Error reading file", err);
+      setIsUploading(true);
+      const newUrls: string[] = [];
+      
+      try {
+        for (const file of files) {
+          const path = `gallery/${Date.now()}_${file.name}`;
+          const url = await uploadFile(file, path);
+          newUrls.push(url);
         }
+        
+        setFormData({ 
+          ...formData, 
+          gallery: [...(formData.gallery || []), ...newUrls] 
+        });
+        toast.success(`${newUrls.length} gallery images uploaded!`);
+      } catch (err) {
+        toast.error("Error uploading gallery images");
+      } finally {
+        setIsUploading(false);
       }
-      setFormData({ 
-        ...formData, 
-        gallery: [...(formData.gallery || []), ...newImages] 
-      });
     }
   };
 
@@ -508,7 +512,7 @@ export const AdminPanel = ({ projects, onAdd, onUpdate, onDelete, onExit }: Admi
                      {/* Main Image Upload */}
                      <div>
                         <label className="block text-xs font-bold uppercase text-slate-400 mb-2">Main Image</label>
-                        <div className="border-2 border-dashed border-slate-200 rounded-lg p-6 text-center hover:bg-slate-50 transition-colors cursor-pointer relative group">
+                        <div className={`border-2 border-dashed border-slate-200 rounded-lg p-6 text-center hover:bg-slate-50 transition-colors cursor-pointer relative group ${isUploading ? 'pointer-events-none opacity-50' : ''}`}>
                           <input 
                             type="file" 
                             accept="image/*"
@@ -516,10 +520,11 @@ export const AdminPanel = ({ projects, onAdd, onUpdate, onDelete, onExit }: Admi
                             aria-label="Upload Main Image"
                             className="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-10" 
                             onChange={handleMainImageUpload}
+                            disabled={isUploading}
                           />
                           <div className="flex flex-col items-center gap-2 text-slate-400 group-hover:text-blue-500 transition-colors">
-                            <Upload size={24} />
-                            <span className="text-xs font-bold uppercase">Upload from Device</span>
+                            {isUploading ? <Loader2 size={24} className="animate-spin" /> : <Upload size={24} />}
+                            <span className="text-xs font-bold uppercase">{isUploading ? 'Uploading...' : 'Upload from Device'}</span>
                           </div>
                         </div>
                         {formData.image && (
@@ -533,7 +538,7 @@ export const AdminPanel = ({ projects, onAdd, onUpdate, onDelete, onExit }: Admi
                      {/* Gallery Upload */}
                      <div>
                         <label className="block text-xs font-bold uppercase text-slate-400 mb-2">Gallery Images</label>
-                        <div className="border-2 border-dashed border-slate-200 rounded-lg p-6 text-center hover:bg-slate-50 transition-colors cursor-pointer relative group">
+                        <div className={`border-2 border-dashed border-slate-200 rounded-lg p-6 text-center hover:bg-slate-50 transition-colors cursor-pointer relative group ${isUploading ? 'pointer-events-none opacity-50' : ''}`}>
                           <input 
                             type="file" 
                             accept="image/*"
@@ -542,10 +547,11 @@ export const AdminPanel = ({ projects, onAdd, onUpdate, onDelete, onExit }: Admi
                             aria-label="Upload Gallery Images"
                             className="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-10" 
                             onChange={handleGalleryUpload}
+                            disabled={isUploading}
                           />
                           <div className="flex flex-col items-center gap-2 text-slate-400 group-hover:text-blue-500 transition-colors">
-                            <ImageIcon size={24} />
-                            <span className="text-xs font-bold uppercase">Upload Multiple</span>
+                            {isUploading ? <Loader2 size={24} className="animate-spin" /> : <ImageIcon size={24} />}
+                            <span className="text-xs font-bold uppercase">{isUploading ? 'Uploading...' : 'Upload Multiple'}</span>
                           </div>
                         </div>
                         
