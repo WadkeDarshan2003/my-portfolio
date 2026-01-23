@@ -8,21 +8,21 @@ interface FooterProps {
 
 export const Footer = ({ onAdminClick }: FooterProps) => {
   return (
-    <footer className="bg-white dark:bg-black pt-20 pb-10 flex flex-col justify-center relative shadow-inner dark:shadow-none border-t border-slate-100 dark:border-neutral-800 transition-colors duration-300">
+    <footer className="bg-white dark:bg-black pt-16 md:pt-20 pb-10 flex flex-col justify-center relative shadow-inner dark:shadow-none border-t border-slate-100 dark:border-neutral-800 transition-colors duration-300">
       <div className="max-w-7xl mx-auto px-6 w-full">
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-16 lg:gap-24 mb-16 md:mb-20">
           
           {/* CTA Section */}
-          <div className="space-y-6 md:space-y-8 flex flex-col justify-center">
-            <h2 className="text-3xl md:text-5xl lg:text-7xl font-serif text-slate-900 dark:text-neutral-100 leading-tight">
+          <div className="space-y-6 md:space-y-8 flex flex-col justify-center text-center md:text-left">
+            <h2 className="text-4xl md:text-5xl lg:text-7xl font-serif text-slate-900 dark:text-neutral-100 leading-tight">
               Have an idea? <br />
               <span className="text-slate-400 italic">Let's build it.</span>
             </h2>
             <div>
               <a 
                 href={`mailto:${DEVELOPER_INFO.email}`} 
-                className="inline-flex items-center gap-3 text-lg md:text-2xl font-medium text-slate-800 dark:text-neutral-200 hover:text-[#2f8d46] dark:hover:text-[#4ade80] transition-colors border-b-2 border-slate-200 dark:border-neutral-700 hover:border-[#2f8d46] dark:hover:border-[#4ade80] pb-1"
+                className="inline-flex items-center gap-3 text-xl md:text-2xl font-medium text-slate-800 dark:text-neutral-200 hover:text-slate-900 dark:hover:text-white transition-colors border-b-2 border-slate-200 dark:border-neutral-700 hover:border-slate-900 dark:hover:border-white pb-1"
               >
                 {DEVELOPER_INFO.email}
                 <ArrowUpRight size={20} className="md:w-6 md:h-6" />

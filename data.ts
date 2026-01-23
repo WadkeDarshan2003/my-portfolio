@@ -30,6 +30,7 @@ export const SERVICES_WITH_ICONS = [
   { title: "Windows Applications", icon: "Monitor" },
   { title: "CMS Systems", icon: "Database" },
   { title: "Portfolio Websites", icon: "Layout" },
+  { title: "Customized Plugins", icon: "Puzzle" },
   { title: "Business Web Presence", icon: "Globe" },
   { title: "ERP Solutions", icon: "Server" },
   { title: "To-Do Applications", icon: "CheckSquare" }
@@ -37,21 +38,24 @@ export const SERVICES_WITH_ICONS = [
 
 // Original Skills mapped to SimpleIcons Slugs
 export const STACK_LOGOS = [
+
   { name: "React", slug: "react" },
   { name: "Node.js", slug: "nodedotjs" },
   { name: "Express.js", slug: "express" },
-  { name: "MongoDB", slug: "mongodb" },
+    { name: "MongoDB", slug: "mongodb" },
+    { name: "GitHub", slug: "github" },
   { name: "TypeScript", slug: "typescript" },
+  { name: "Python", slug: "python" },
   { name: "React Native", slug: "react" }, // Moved here to separate from React
   { name: "Generative AI", slug: "google" }, // Using Google as proxy for GenAI/Gemini
   { name: "Firebase", slug: "firebase" },
   { name: "SQL", slug: "mysql" }, // Using MySQL as generic SQL logo
   { name: "GitLab", slug: "gitlab" },
-  { name: "GitHub", slug: "github" },
   { name: "WordPress", slug: "wordpress" },
-  { name: "CSS", slug: "css3" },
   { name: "Tailwind CSS", slug: "tailwindcss" },
-  { name: "Framer Motion", slug: "framer" }
+  { name: "Bootstrap", slug: "bootstrap" },
+  { name: "Framer Motion", slug: "framer" },
+  { name: "JavaScript", slug: "javascript" }
 ];
 
 export const DEVELOPER_INFO = {
@@ -62,8 +66,9 @@ export const DEVELOPER_INFO = {
   // Technologies (How I build)
   skills: [
     "React", "React Native", "Node.js", "Express.js", "MongoDB", "TypeScript", 
+    "JavaScript", "Python",
     "Generative AI", "Firebase", "SQL",
-    "GitLab", "GitHub", "WordPress", "CSS", "Tailwind CSS", "Framer Motion"
+    "GitLab", "GitHub", "WordPress", "Tailwind CSS", "Bootstrap", "Framer Motion"
   ],
   // Deliverables (What I build)
   services: [
@@ -71,6 +76,7 @@ export const DEVELOPER_INFO = {
     "Windows Applications",
     "CMS Systems",
     "Portfolio Websites",
+    "Customized Plugins",
     "Business Web Presence",
     "ERP Solutions",
     "To-Do Applications"
@@ -82,7 +88,7 @@ export const DEVELOPER_INFO = {
     instagram: "https://instagram.com"
   },
   location: "San Francisco, CA",
-  email: "darshan@example.com",
+  email: "wadkedarshan2003@gmail.com",
   avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=2574&auto=format&fit=crop"
 };
 
@@ -98,6 +104,7 @@ export const PROJECTS: Project[] = [
     image: "https://images.unsplash.com/photo-1526502900729-6804dc3d4672?q=80&w=2555&auto=format&fit=crop",
     theme: 'light',
     bgColor: "bg-[#FFF1F2]", // Rose 50
+    darkGradient: "dark:bg-[radial-gradient(ellipse_80%_60%_at_50%_-10%,rgba(225,29,72,0.25),rgba(255,255,255,0))]",
     status: 'published',
     gallery: [
       "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?q=80&w=2670&auto=format&fit=crop",
@@ -116,6 +123,7 @@ export const PROJECTS: Project[] = [
     image: "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?q=80&w=2670&auto=format&fit=crop",
     theme: 'light',
     bgColor: "bg-[#F5F3FF]", // Violet 50
+    darkGradient: "dark:bg-[radial-gradient(ellipse_80%_60%_at_50%_-10%,rgba(124,58,237,0.25),rgba(255,255,255,0))]",
     status: 'published',
     gallery: [
       "https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=2670&auto=format&fit=crop",
@@ -133,6 +141,7 @@ export const PROJECTS: Project[] = [
     image: "https://images.unsplash.com/photo-1432888498266-38ffec3eaf0a?q=80&w=2674&auto=format&fit=crop",
     theme: 'light',
     bgColor: "bg-[#ECFEFF]", // Cyan 50
+    darkGradient: "dark:bg-[radial-gradient(ellipse_80%_60%_at_50%_-10%,rgba(8,145,178,0.25),rgba(255,255,255,0))]",
     status: 'published',
     gallery: [
       "https://images.unsplash.com/photo-1555066931-4365d14bab8c?q=80&w=2670&auto=format&fit=crop",
@@ -151,6 +160,7 @@ export const PROJECTS: Project[] = [
     image: "https://images.unsplash.com/photo-1452587925148-ce544e77e70d?q=80&w=2574&auto=format&fit=crop",
     theme: 'light',
     bgColor: "bg-[#FAFAF9]", // Stone 50
+    darkGradient: "dark:bg-[radial-gradient(ellipse_80%_60%_at_50%_-10%,rgba(87,83,78,0.25),rgba(255,255,255,0))]",
     status: 'published',
     gallery: [
        "https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?q=80&w=2670&auto=format&fit=crop",
@@ -168,6 +178,7 @@ export const PROJECTS: Project[] = [
     image: "https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=2669&auto=format&fit=crop",
     theme: 'light',
     bgColor: "bg-[#F0FDFA]", // Teal 50
+    darkGradient: "dark:bg-[radial-gradient(ellipse_80%_60%_at_50%_-10%,rgba(13,148,136,0.25),rgba(255,255,255,0))]",
     status: 'published',
     gallery: [
       "https://images.unsplash.com/photo-1486406141726-eda6378800ee?q=80&w=2670&auto=format&fit=crop",
@@ -186,6 +197,7 @@ export const PROJECTS: Project[] = [
     image: "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?q=80&w=2670&auto=format&fit=crop",
     theme: 'light',
     bgColor: "bg-[#F1F5F9]", // Slate 100
+    darkGradient: "dark:bg-[radial-gradient(ellipse_80%_60%_at_50%_-10%,rgba(71,85,105,0.25),rgba(255,255,255,0))]",
     status: 'published',
     gallery: [
       "https://images.unsplash.com/photo-1494412574643-ff11b0a5c1c3?q=80&w=2670&auto=format&fit=crop",
@@ -203,6 +215,7 @@ export const PROJECTS: Project[] = [
     image: "https://images.unsplash.com/photo-1484480974693-6ca0a78fb36b?q=80&w=2672&auto=format&fit=crop",
     theme: 'light',
     bgColor: "bg-[#FFF7ED]", // Orange 50
+    darkGradient: "dark:bg-[radial-gradient(ellipse_80%_60%_at_50%_-10%,rgba(234,88,12,0.25),rgba(255,255,255,0))]",
     status: 'published',
     gallery: [
       "https://images.unsplash.com/photo-1512314889357-e157c22f938d?q=80&w=2671&auto=format&fit=crop",
@@ -221,6 +234,7 @@ export const PROJECTS: Project[] = [
     image: "https://images.unsplash.com/photo-1470058869958-2a77ade41c02?q=80&w=2670&auto=format&fit=crop",
     theme: 'light',
     bgColor: "bg-[#F0FFF4]", // Green 50
+    darkGradient: "dark:bg-[radial-gradient(ellipse_80%_60%_at_50%_-10%,rgba(22,163,74,0.25),rgba(255,255,255,0))]",
     status: 'published',
     gallery: [
       "https://images.unsplash.com/photo-1466692476868-aef1dfb1e735?q=80&w=2670&auto=format&fit=crop",

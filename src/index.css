@@ -1,0 +1,53 @@
+@import "tailwindcss";
+@config "../tailwind.config.js";
+
+@theme {
+  --color-pastel-1: #F5F5F4;
+  --color-pastel-2: #F0F9FF;
+  --color-pastel-3: #FDF4FF;
+  --color-pastel-4: #FFFBEB;
+  --color-pastel-5: #ECFEFF;
+  --color-pastel-6: #F8FAFC;
+
+  --animate-spin-slow: spin 40s linear infinite;
+  --animate-spin-slow-reverse: spin-reverse 60s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes spin-reverse {
+  from { transform: rotate(360deg); }
+  to { transform: rotate(0deg); }
+}
+
+/* Explicit classes for the Hero animation to ensure they work regardless of Tailwind processing */
+.hero-spin {
+  animation: spin 40s linear infinite !important;
+}
+
+.hero-spin-reverse {
+  animation: spin-reverse 60s linear infinite !important;
+}
+
+/* Force dark mode styles if Tailwind 4 variant is fussy */
+.dark .dark-bg-fix {
+  background-color: #050505 !important;
+}
+
+.dark .dark-text-fix {
+  color: #f5f5f5 !important;
+}
+
+/* Tailwind 4 class-based dark mode support */
+@variant dark (&:where(.dark, .dark *));
+
+@layer utilities {
+  .theme-transition-fix {
+    backface-visibility: hidden;
+    transform: translateZ(0);
+  }
+}
+

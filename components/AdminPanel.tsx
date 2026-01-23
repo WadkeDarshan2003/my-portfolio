@@ -1,32 +1,37 @@
 
 import React, { useState } from 'react';
 import { Project } from '../types';
-import { Plus, Trash2, Save, Layout, Monitor, Edit3, ArrowLeft, Upload, X, Image as ImageIcon, Menu, PanelLeftClose, PanelLeftOpen, CheckCircle, CircleDashed } from 'lucide-react';
+import { Plus, Trash2, Save, Layout, Monitor, Edit3, ArrowLeft, Upload, X, Image as ImageIcon, Menu, PanelLeftClose, PanelLeftOpen, Rocket, CircleDashed } from 'lucide-react';
 import { ProjectCard } from './ProjectPair';
 import { ProjectDetail } from './ProjectDetail';
+import { Toast, useToast } from './Toast';
+import { CustomCursor } from './CustomCursor';
 
 interface AdminPanelProps {
   projects: Project[];
   onAdd: (project: Project) => void;
   onUpdate: (project: Project) => void;
-  onDelete: (id: number) => void;
+  onDelete: (id: number | string) => void;
   onExit: () => void;
 }
 
-const EMPTY_PROJECT: Project = {
+const EMPTY_PROJECT: any = {
   id: 0,
-  title: '',
-  category: '',
-  description: '',
+  title: "",
+  category: "",
+  description: "",
   stack: [],
-  duration: '',
-  speciality: '',
-  image: '',
-  theme: 'light',
-  bgColor: 'bg-[#F8FAFC]',
-  status: 'draft',
+  duration: "",
+  speciality: "",
+  image: "",
+  theme: "light",
+  bgColor: "bg-[#F8FAFC]",
+  hexColor: "#64748b",
+  status: "draft",
   gallery: [],
-  details: []
+  details: [],
+  websiteUrl: "",
+  sourceCodeUrl: ""
 };
 
 const THEME_OPTIONS = [
@@ -41,10 +46,11 @@ const THEME_OPTIONS = [
 ];
 
 export const AdminPanel = ({ projects, onAdd, onUpdate, onDelete, onExit }: AdminPanelProps) => {
-  const [editingId, setEditingId] = useState<number | null>(null);
+  const [editingId, setEditingId] = useState<number | string | null>(null);
   const [formData, setFormData] = useState<Project>(EMPTY_PROJECT);
   const [viewMode, setViewMode] = useState<'edit' | 'preview-card' | 'preview-page'>('edit');
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const toast = useToast();
 
   // Load project into form
   const handleEdit = (project: Project) => {
@@ -58,7 +64,7 @@ export const AdminPanel = ({ projects, onAdd, onUpdate, onDelete, onExit }: Admi
   };
 
   const handleCreate = () => {
-    const newId = Math.max(0, ...projects.map(p => p.id)) + 1;
+    const newId = Date.now(); // Use timestamp for new IDs
     setFormData({ ...EMPTY_PROJECT, id: newId });
     setEditingId(null);
     setViewMode('edit');
@@ -73,10 +79,10 @@ export const AdminPanel = ({ projects, onAdd, onUpdate, onDelete, onExit }: Admi
     } else {
       onAdd(formData);
     }
-    alert("Project saved successfully!");
+    toast.success("Project saved successfully!");
   };
 
-  const handleDelete = (id: number) => {
+  const handleDelete = (id: number | string) => {
     if (window.confirm('Are you sure you want to delete this project?')) {
       onDelete(id);
       if (editingId === id) {
@@ -111,7 +117,7 @@ export const AdminPanel = ({ projects, onAdd, onUpdate, onDelete, onExit }: Admi
         const base64Url = await readFileAsDataURL(file);
         setFormData({ ...formData, image: base64Url });
       } catch (err) {
-        alert("Failed to read file");
+        toast.error("Failed to read file");
       }
     }
   };
@@ -162,7 +168,9 @@ export const AdminPanel = ({ projects, onAdd, onUpdate, onDelete, onExit }: Admi
   };
 
   return (
-    <div className="h-screen w-full bg-slate-50 flex overflow-hidden font-sans">
+    <>
+      <CustomCursor />
+      <div className="h-screen w-full bg-slate-50 flex overflow-hidden font-sans">
       
       {/* Sidebar - Collapsible */}
       <aside className={`
@@ -232,6 +240,8 @@ export const AdminPanel = ({ projects, onAdd, onUpdate, onDelete, onExit }: Admi
         {!isSidebarOpen && (
           <button 
             onClick={() => setIsSidebarOpen(true)}
+            aria-label="Open Sidebar"
+            title="Open Sidebar"
             className="md:hidden absolute bottom-6 left-6 z-50 p-3 bg-slate-900 text-white rounded-full shadow-lg hover:scale-110 transition-transform"
           >
             <Menu size={20} />
@@ -286,6 +296,8 @@ export const AdminPanel = ({ projects, onAdd, onUpdate, onDelete, onExit }: Admi
                   <select 
                     value={formData.status}
                     onChange={(e) => setFormData({...formData, status: e.target.value as 'published' | 'draft'})}
+                    aria-label="Project Status"
+                    title="Project Status"
                     className={`appearance-none pl-8 pr-8 py-2 rounded-md text-sm font-medium border outline-none focus:ring-2 focus:ring-slate-200 cursor-pointer transition-colors ${
                        formData.status === 'published' 
                        ? 'bg-green-50 border-green-200 text-green-700' 
@@ -296,7 +308,7 @@ export const AdminPanel = ({ projects, onAdd, onUpdate, onDelete, onExit }: Admi
                     <option value="published">Published</option>
                   </select>
                   <div className={`absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none ${formData.status === 'published' ? 'text-green-600' : 'text-amber-600'}`}>
-                     {formData.status === 'published' ? <CheckCircle size={14} /> : <CircleDashed size={14} />}
+                     {formData.status === 'published' ? <Rocket size={14} /> : <CircleDashed size={14} />}
                   </div>
                </div>
 
@@ -391,7 +403,7 @@ export const AdminPanel = ({ projects, onAdd, onUpdate, onDelete, onExit }: Admi
                      </div>
                      
                      <div className="space-y-4">
-                        {(formData.details || []).map((section, idx) => (
+                        {(formData.details || []).map((section: { title: string; content: string }, idx: number) => (
                            <div key={idx} className="bg-slate-50 p-4 rounded-lg border border-slate-100 relative group hover:border-blue-200 transition-colors">
                               <button 
                                 onClick={() => removeDetailSection(idx)}
@@ -449,6 +461,26 @@ export const AdminPanel = ({ projects, onAdd, onUpdate, onDelete, onExit }: Admi
                           className="w-full p-3 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-100 outline-none text-sm font-mono text-slate-600"
                         />
                     </div>
+                    <div>
+                       <label className="block text-xs font-bold uppercase text-slate-400 mb-1">Website URL</label>
+                       <input 
+                          type="url" 
+                          value={formData.websiteUrl || ''} 
+                          onChange={e => setFormData({...formData, websiteUrl: e.target.value})}
+                          placeholder="https://example.com"
+                          className="w-full p-3 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-100 outline-none text-sm font-mono text-slate-600"
+                        />
+                    </div>
+                    <div>
+                       <label className="block text-xs font-bold uppercase text-slate-400 mb-1">Source Code URL</label>
+                       <input 
+                          type="url" 
+                          value={formData.sourceCodeUrl || ''} 
+                          onChange={e => setFormData({...formData, sourceCodeUrl: e.target.value})}
+                          placeholder="https://github.com/username/repo"
+                          className="w-full p-3 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-100 outline-none text-sm font-mono text-slate-600"
+                        />
+                    </div>
                   </div>
 
                   {/* Visuals */}
@@ -480,6 +512,8 @@ export const AdminPanel = ({ projects, onAdd, onUpdate, onDelete, onExit }: Admi
                           <input 
                             type="file" 
                             accept="image/*"
+                            title="Upload Main Image"
+                            aria-label="Upload Main Image"
                             className="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-10" 
                             onChange={handleMainImageUpload}
                           />
@@ -504,6 +538,8 @@ export const AdminPanel = ({ projects, onAdd, onUpdate, onDelete, onExit }: Admi
                             type="file" 
                             accept="image/*"
                             multiple
+                            title="Upload Gallery Images"
+                            aria-label="Upload Gallery Images"
                             className="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-10" 
                             onChange={handleGalleryUpload}
                           />
@@ -516,11 +552,13 @@ export const AdminPanel = ({ projects, onAdd, onUpdate, onDelete, onExit }: Admi
                         {/* Gallery Preview Grid */}
                         {formData.gallery && formData.gallery.length > 0 && (
                           <div className="grid grid-cols-3 gap-2 mt-4">
-                             {formData.gallery.map((img, idx) => (
+                             {formData.gallery.map((img: string, idx: number) => (
                                <div key={idx} className="aspect-square relative group rounded-md overflow-hidden border border-slate-200 bg-slate-100">
                                  <img src={img} alt={`Gallery ${idx}`} className="w-full h-full object-cover" />
                                  <button 
                                    onClick={() => removeGalleryImage(idx)}
+                                   title="Remove Gallery Image"
+                                   aria-label="Remove Gallery Image"
                                    className="absolute top-1 right-1 bg-red-500 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600 shadow-sm"
                                  >
                                    <X size={12} />
@@ -552,6 +590,10 @@ export const AdminPanel = ({ projects, onAdd, onUpdate, onDelete, onExit }: Admi
         </div>
 
       </main>
-    </div>
+      </div>
+
+      {/* Toast Notifications */}
+      <Toast messages={toast.messages} onRemove={toast.removeToast} />
+    </>
   );
 };

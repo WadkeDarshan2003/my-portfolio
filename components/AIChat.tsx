@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { MessageSquare, X, Send, Sparkles, Loader2 } from 'lucide-react';
+import { MessageSquare, X, Send, Brain, Loader2 } from 'lucide-react';
 import { GoogleGenAI } from "@google/genai";
 import { ChatMessage } from '../types';
 import { DEVELOPER_INFO, PROJECTS } from '../data';
@@ -69,17 +69,22 @@ export const AIChat = () => {
   };
 
   return (
-    <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end">
+    <div className="fixed bottom-24 md:bottom-6 right-6 z-50 flex flex-col items-end">
       {/* Chat Window */}
       {isOpen && (
-        <div className="mb-4 w-80 md:w-96 bg-white dark:bg-neutral-900 rounded-2xl shadow-2xl border border-slate-100 dark:border-neutral-800 overflow-hidden flex flex-col animate-fade-in-up transition-all duration-300 transform origin-bottom-right">
+        <div className="mb-4 w-[calc(100vw-3rem)] md:w-96 bg-white dark:bg-neutral-900 rounded-2xl shadow-2xl border border-slate-100 dark:border-neutral-800 overflow-hidden flex flex-col animate-fade-in-up transition-all duration-300 transform origin-bottom-right">
           {/* Header */}
           <div className="bg-slate-800 dark:bg-black p-4 flex justify-between items-center text-white">
             <div className="flex items-center gap-2">
-              <Sparkles size={16} className="text-yellow-300" />
+              <Brain size={16} className="text-blue-400" />
               <span className="font-medium text-sm">Ask about {DEVELOPER_INFO.name}</span>
             </div>
-            <button onClick={() => setIsOpen(false)} className="hover:bg-slate-700 dark:hover:bg-neutral-900 p-1 rounded transition-colors">
+            <button 
+              onClick={() => setIsOpen(false)} 
+              aria-label="Close chat"
+              title="Close chat"
+              className="hover:bg-slate-700 dark:hover:bg-neutral-900 p-1 rounded transition-colors"
+            >
               <X size={18} />
             </button>
           </div>
@@ -123,6 +128,8 @@ export const AIChat = () => {
             <button 
               onClick={handleSend}
               disabled={isLoading || !input.trim()}
+              aria-label="Send message"
+              title="Send message"
               className="p-2 bg-slate-800 dark:bg-neutral-800 text-white rounded-lg hover:bg-slate-700 dark:hover:bg-neutral-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               <Send size={18} />
@@ -134,6 +141,8 @@ export const AIChat = () => {
       {/* Toggle Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
+        aria-label={isOpen ? "Close AI chat" : "Open AI chat"}
+        title={isOpen ? "Close AI chat" : "Open AI chat"}
         className={`p-4 rounded-full shadow-lg transition-all duration-300 hover:scale-105 flex items-center justify-center ${isOpen ? 'bg-slate-200 text-slate-600 rotate-90 dark:bg-neutral-800 dark:text-neutral-200' : 'bg-slate-800 text-white dark:bg-neutral-800'}`}
       >
         {isOpen ? <X size={24} /> : <MessageSquare size={24} />}

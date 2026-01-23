@@ -72,11 +72,11 @@ export const ProjectCard = ({
                 }}
              ></div>
 
-             {/* Top Spotlight Gradient (Vercel-style) */}
-             <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(120,119,198,0.15),rgba(255,255,255,0))]"></div>
+             {/* Top Spotlight Gradient (Vercel-style) - Increased visibility */}
+             <div className={`absolute inset-0 ${project.darkGradient || "bg-[radial-gradient(ellipse_80%_60%_at_50%_-10%,rgba(120,119,198,0.25),rgba(255,255,255,0))]"}`}></div>
              
              {/* Subtle ambient colors from project theme (optional, kept very low) */}
-             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[60%] h-[60%] bg-blue-500/5 blur-[100px] rounded-full mix-blend-screen opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
+             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[70%] h-[70%] bg-blue-500/10 blur-[120px] rounded-full mix-blend-screen opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
           </div>
       </div>
 
@@ -106,7 +106,7 @@ export const ProjectCard = ({
 
         {/* Central Image - Adjusted for cleaner look */}
         <div className="absolute inset-0 md:inset-auto md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 w-full h-full md:w-[60%] md:h-[45%] opacity-10 md:opacity-100 transition-all duration-700 pointer-events-none md:pointer-events-auto z-10 flex items-center justify-center">
-           <div className={`relative w-full h-full overflow-hidden shadow-2xl transition-all duration-700 rounded-none md:rounded-lg border border-white/20 dark:border-white/5 ${isHovered ? 'scale-105 shadow-[0_30px_60px_-12px_rgba(50,50,93,0.25)] dark:shadow-[0_0_50px_-12px_rgba(255,255,255,0.1)]' : 'scale-100'}`}>
+           <div className={`relative w-full h-full overflow-hidden shadow-2xl transition-all duration-700 rounded-none md:rounded-lg border border-white/20 dark:border-white/5 ${isHovered ? 'scale-105 shadow-[0_30px_60px_-12px_rgba(0,0,0,0.15)] dark:shadow-[0_0_50px_-12px_rgba(255,255,255,0.1)]' : 'scale-100'}`}>
              {project.image ? (
                <img 
                  src={project.image}
@@ -123,18 +123,33 @@ export const ProjectCard = ({
 
              {/* Overlay: Hover Only */}
              {!isPreview && (
-               <div className={`absolute inset-0 bg-black/20 backdrop-blur-[2px] flex items-center justify-center transition-all duration-500 ${isHovered ? 'opacity-100' : 'opacity-0'}`}>
-                 <button className={`px-5 py-2.5 bg-white dark:bg-neutral-900 text-slate-900 dark:text-white border border-transparent dark:border-white/20 rounded-full font-bold text-xs uppercase tracking-widest shadow-xl transition-all duration-500 flex items-center gap-2 ${isHovered ? 'translate-y-0 scale-100' : 'translate-y-4 scale-95'}`}>
-                   View Case <ArrowUpRight size={14} />
-                 </button>
+               <div className={`absolute inset-0 bg-black/20 backdrop-blur-[2px] flex items-center justify-center transition-all duration-500 ease-in-out ${isHovered ? 'opacity-100' : 'opacity-0'}`}>
+                 {project.websiteUrl ? (
+                   <a 
+                     href={project.websiteUrl} 
+                     target="_blank" 
+                     rel="noopener noreferrer"
+                     onClick={(e) => e.stopPropagation()}
+                     className={`px-5 py-2.5 bg-white dark:bg-neutral-900 text-slate-900 dark:text-white border border-transparent dark:border-white/20 rounded-full font-bold text-xs uppercase tracking-widest shadow-xl transition-all duration-500 ease-in-out flex items-center gap-2 ${isHovered ? 'translate-y-0 scale-100' : 'translate-y-4 scale-95'}`}
+                   >
+                     View Website <ArrowUpRight size={14} />
+                   </a>
+                 ) : (
+                   <button 
+                     onClick={(e) => e.stopPropagation()}
+                     className={`px-5 py-2.5 bg-white dark:bg-neutral-900 text-slate-900 dark:text-white border border-transparent dark:border-white/20 rounded-full font-bold text-xs uppercase tracking-widest shadow-xl transition-all duration-500 ease-in-out flex items-center gap-2 ${isHovered ? 'translate-y-0 scale-100' : 'translate-y-4 scale-95'}`}
+                   >
+                     View Website <ArrowUpRight size={14} />
+                   </button>
+                 )}
                </div>
              )}
            </div>
         </div>
 
         {/* Footer Info Card - Refined Glassmorphism */}
-        <div className="mt-auto transform transition-all duration-500 delay-75 relative z-20 group-hover:translate-y-0 translate-y-2 opacity-90 group-hover:opacity-100">
-           <div className="bg-white/60 dark:bg-neutral-900/60 backdrop-blur-xl border border-white/50 dark:border-white/10 p-5 rounded-xl shadow-sm hover:shadow-md transition-all">
+        <div className="mt-auto transform transition-all duration-500 ease-in-out relative z-20 group-hover:translate-y-0 translate-y-3">
+           <div className="bg-white/90 dark:bg-neutral-900/90 backdrop-blur-xl border border-white/50 dark:border-white/10 p-5 rounded-xl shadow-lg hover:shadow-xl transition-all">
               <p className="text-slate-700 dark:text-neutral-300 mb-4 text-sm leading-relaxed line-clamp-3 md:line-clamp-none font-normal">
                 {project.description || "Project description goes here..."}
               </p>
@@ -170,7 +185,7 @@ export const ProjectCard = ({
 
 export const ProjectPair: React.FC<ProjectPairProps> = ({ projectLeft, projectRight, onProjectClick }) => {
   return (
-    <section className="flex flex-col md:flex-row w-full min-h-screen">
+    <section id="projects" className="flex flex-col md:flex-row w-full min-h-screen">
       <ProjectCard project={projectLeft} onClick={() => onProjectClick(projectLeft)} />
       {projectRight ? (
         <ProjectCard project={projectRight} onClick={() => onProjectClick(projectRight)} />

@@ -13,57 +13,229 @@ import { Expertise } from "./components/Expertise";
 import { PROJECTS as INITIAL_PROJECTS, DEVELOPER_INFO } from "./data";
 import { Project } from "./types";
 import { Sun, Moon } from "lucide-react";
+import { getProjects, addProject, updateProject, deleteProject } from "./src/services/projectService";
+import { testFirebaseConnection } from "./src/services/firebaseTest";
+import { migrateProjectsToFirebase, getMigrationStatus } from "./src/services/migrationService";
 
 const App = () => {
-  // State for Projects (Simulating Database)
-  const [projects, setProjects] = useState<Project[]>(INITIAL_PROJECTS);
+  // State for Projects (ONLY from Firebase - no fallback)
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [migrating, setMigrating] = useState(false);
+  const [firebaseStatus, setFirebaseStatus] = useState<{
+    connected: boolean;
+    error?: string;
+  }>({ connected: false });
+  
+  // Load projects from Firebase ONLY with auto-migration
+  useEffect(() => {
+    const loadFirebaseProjects = async () => {
+      try {
+        setLoading(true);
+        console.log('🔍 Testing Firebase connection...');
+        const connectionTest = await testFirebaseConnection();
+        
+        setFirebaseStatus({
+          connected: connectionTest.connected,
+          error: connectionTest.error,
+        });
+        
+        if (connectionTest.connected) {
+          console.log('✅ Firebase connected, loading projects...');
+          
+          // Try to load existing projects first
+          const firebaseProjects = await getProjects();
+          console.log(`📊 Found ${firebaseProjects.length} projects in Firebase`);
+          
+          // Only migrate if database is empty
+          if (firebaseProjects.length === 0) {
+            console.log('📦 Database empty, starting auto-migration...');
+            setMigrating(true);
+            
+            const migrationResult = await migrateProjectsToFirebase(INITIAL_PROJECTS);
+            
+            if (migrationResult.success) {
+              console.log(`✅ Migration complete! ${migrationResult.migrated} projects added`);
+              
+              // Reload projects after migration
+              const newProjects = await getProjects();
+              setProjects(newProjects);
+              console.log(`📦 Loaded ${newProjects.length} projects after migration`);
+            } else {
+              console.error(`❌ Migration failed:`, migrationResult.errors);
+            }
+            
+            setMigrating(false);
+          } else {
+            // Database has projects, use them
+            setProjects(firebaseProjects);
+          }
+        } else {
+          console.error('❌ Firebase connection failed:', connectionTest.error);
+        }
+      } catch (error) {
+        console.error('Failed to load Firebase projects:', error);
+        setFirebaseStatus({
+          connected: false,
+          error: error instanceof Error ? error.message : 'Unknown error',
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadFirebaseProjects();
+  }, []);
   
   // Navigation State
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [isAdminMode, setIsAdminMode] = useState(false);
 
-  // Theme State
-  const [isDarkMode, setIsDarkMode] = useState(false);
+  // Theme State - Initialize based on system preference
+  const [isDarkMode, setIsDarkMode] = useState(() => {
+    // Check if user has a saved preference
+    const saved = localStorage.getItem('theme');
+    if (saved) {
+      return saved === 'dark';
+    }
+    // Otherwise check system preference
+    return window.matchMedia('(prefers-color-scheme: dark)').matches;
+  });
 
   useEffect(() => {
-    // Check system preference or logic here if needed, default is light
+    // Apply theme to document and body
     if (isDarkMode) {
       document.documentElement.classList.add('dark');
+      document.body.classList.add('dark');
+      localStorage.setItem('theme', 'dark');
     } else {
       document.documentElement.classList.remove('dark');
+      document.body.classList.remove('dark');
+      localStorage.setItem('theme', 'light');
+    }
+
+    // Force repaint to fix backdrop-filter bug in some browsers during theme switch
+    const navbar = document.querySelector('nav');
+    if (navbar) {
+      navbar.style.opacity = '0.99';
+      setTimeout(() => {
+        navbar.style.opacity = '1';
+      }, 0);
     }
   }, [isDarkMode]);
 
   const toggleTheme = () => {
+    console.log('Toggling theme from', isDarkMode ? 'dark' : 'light', 'to', isDarkMode ? 'light' : 'dark');
     setIsDarkMode(!isDarkMode);
   };
 
   // --- CRUD Operations for CMS ---
   
-  const handleAddProject = (newProject: Project) => {
-    setProjects(prev => [...prev, newProject]);
+  const handleAddProject = async (newProject: Project) => {
+    try {
+      const projectId = await addProject(newProject);
+      if (projectId) {
+        const projectWithId = { ...newProject, id: projectId };
+        setProjects(prev => [...prev, projectWithId]);
+      }
+    } catch (error) {
+      console.error('Error adding project:', error);
+    }
   };
 
-  const handleUpdateProject = (updatedProject: Project) => {
-    setProjects(prev => prev.map(p => p.id === updatedProject.id ? updatedProject : p));
+  const handleUpdateProject = async (updatedProject: Project) => {
+    try {
+      const projectId = typeof updatedProject.id === 'string' 
+        ? updatedProject.id 
+        : updatedProject.id?.toString() || '';
+      
+      if (projectId) {
+        await updateProject(projectId, updatedProject);
+        setProjects(prev => prev.map(p => p.id === updatedProject.id ? updatedProject : p));
+      }
+    } catch (error) {
+      console.error('Error updating project:', error);
+    }
   };
 
-  const handleDeleteProject = (id: number) => {
-    setProjects(prev => prev.filter(p => p.id !== id));
+  const handleDeleteProject = async (id: number | string) => {
+    try {
+      const projectId = typeof id === 'string' ? id : id?.toString() || '';
+      
+      if (projectId) {
+        await deleteProject(projectId);
+        setProjects(prev => prev.filter(p => p.id !== id));
+      }
+    } catch (error) {
+      console.error('Error deleting project:', error);
+    }
   };
 
   // --- Render Logic ---
 
+  // Loading State
+  if (loading) {
+    return (
+      <>
+        {/* Run theme switch immediately in loading state too */}
+        <main className="w-full relative min-h-screen bg-stone-50 dark:bg-black flex items-center justify-center transition-colors duration-300">
+          <div className="text-center">
+            <div className="inline-block animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-slate-900 dark:border-white mb-4"></div>
+            <p className="text-slate-900 dark:text-white font-medium">
+              {migrating ? '📦 Migrating projects...' : 'Loading the tech'}
+            </p>
+            <p className="text-slate-600 dark:text-neutral-400 text-sm mt-2">
+              {migrating ? 'First-time setup, please wait' : 'Preparing your experience'}
+            </p>
+          </div>
+        </main>
+      </>
+    );
+  }
+
+  // Firebase Connection Error
+  if (!firebaseStatus.connected) {
+    return (
+      <main className="w-full relative min-h-screen bg-stone-50 dark:bg-black flex items-center justify-center transition-colors duration-300 p-8">
+        <div className="max-w-2xl text-center">
+          <div className="text-6xl mb-4">⚠️</div>
+          <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-4">Firebase Connection Failed</h1>
+          <p className="text-slate-700 dark:text-neutral-300 mb-6">{firebaseStatus.error || 'Unable to connect to Firebase'}</p>
+          <div className="bg-slate-100 dark:bg-neutral-900 rounded-lg p-6 text-left">
+            <h2 className="font-semibold text-slate-900 dark:text-white mb-3">Troubleshooting Steps:</h2>
+            <ol className="list-decimal list-inside space-y-2 text-slate-700 dark:text-neutral-300 text-sm">
+              <li>Go to <a href="https://console.firebase.google.com" target="_blank" rel="noopener noreferrer" className="text-blue-600 dark:text-blue-400 underline">Firebase Console</a></li>
+              <li>Select your project: <strong>darshanwadke-portfolio</strong></li>
+              <li>Go to Firestore Database → Create Database (if not created)</li>
+              <li>Choose "Test Mode" for security rules</li>
+              <li>Click "Publish" and wait 60 seconds</li>
+              <li>Refresh this page</li>
+            </ol>
+          </div>
+          <button 
+            onClick={() => window.location.reload()} 
+            className="mt-6 px-6 py-3 bg-slate-900 dark:bg-white text-white dark:text-black rounded-lg hover:scale-105 transition-transform"
+          >
+            Retry Connection
+          </button>
+        </div>
+      </main>
+    );
+  }
+
   // 1. Admin CMS View
   if (isAdminMode) {
     return (
-      <AdminPanel 
-        projects={projects}
-        onAdd={handleAddProject}
-        onUpdate={handleUpdateProject}
-        onDelete={handleDeleteProject}
-        onExit={() => setIsAdminMode(false)}
-      />
+      <main className="w-full relative min-h-screen bg-white transition-colors duration-300">
+        <CustomCursor />
+        <AdminPanel 
+          projects={projects}
+          onAdd={handleAddProject}
+          onUpdate={handleUpdateProject}
+          onDelete={handleDeleteProject}
+          onExit={() => setIsAdminMode(false)}
+        />
+      </main>
     );
   }
 
@@ -115,7 +287,8 @@ const App = () => {
   return (
     <main className="w-full relative min-h-screen bg-stone-50 dark:bg-black transition-colors duration-300">
       <CustomCursor />
-      <Navbar />
+
+      <Navbar projects={projects} />
 
       {/* Top Right Actions - Fixed */}
       <div className="fixed top-6 right-6 z-[60] flex items-center gap-3">
@@ -135,7 +308,13 @@ const App = () => {
 
       <Hero />
 
-      <div className="flex flex-col bg-stone-50 dark:bg-black transition-colors duration-300">
+      <div className="relative flex flex-col bg-stone-50 dark:bg-black transition-colors duration-300 overflow-hidden">
+        {/* Project Section Background Decoration - Dark Mode Only */}
+        <div className="hidden dark:block absolute inset-0 pointer-events-none">
+           <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-blue-600/10 blur-[150px] rounded-full"></div>
+           <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-purple-600/10 blur-[150px] rounded-full"></div>
+        </div>
+
         {projectPairs.map((pair, index) => (
           <ProjectPair 
             key={index} 

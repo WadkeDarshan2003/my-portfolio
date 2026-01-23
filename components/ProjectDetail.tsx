@@ -43,6 +43,8 @@ export const ProjectDetail = ({ project, onBack, isPreview = false }: ProjectDet
       <nav className={`${navPositionClass} top-0 left-0 w-full z-50 px-4 md:px-6 py-4 md:py-6 flex justify-between items-center pointer-events-none`}>
         <button 
           onClick={onBack}
+          aria-label="Go back to projects"
+          title="Go back to projects"
           className="pointer-events-auto bg-white/80 dark:bg-black/80 backdrop-blur-md border border-slate-200 dark:border-neutral-800 shadow-sm p-2 md:p-3 rounded-full hover:bg-white dark:hover:bg-neutral-900 hover:scale-105 transition-all text-slate-700 dark:text-neutral-200 group"
         >
           <ArrowLeft size={20} className="w-5 h-5 md:w-6 md:h-6 group-hover:-translate-x-1 transition-transform" />
@@ -51,7 +53,29 @@ export const ProjectDetail = ({ project, onBack, isPreview = false }: ProjectDet
 
       {/* Hero Header */}
       <header className={`relative w-full pt-24 pb-12 md:pt-32 md:pb-20 px-4 md:px-6 ${project.bgColor} dark:bg-neutral-900 transition-colors duration-500`}>
-        <div className="max-w-5xl mx-auto">
+        {/* Background Layers */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+            {/* Dark Mode Grid & Spotlight */}
+             <div className="hidden dark:block absolute inset-0">
+                <div 
+                    className="absolute inset-0 opacity-[0.08]" 
+                    style={{ 
+                    backgroundImage: 'linear-gradient(to right, #808080 1px, transparent 1px), linear-gradient(to bottom, #808080 1px, transparent 1px)', 
+                    backgroundSize: '40px 40px',
+                    maskImage: 'radial-gradient(circle at center, black 40%, transparent 100%)'
+                    }}
+                ></div>
+                <div className={`absolute inset-0 ${project.darkGradient || ""}`}></div>
+            </div>
+            
+            {/* Light Mode Noise/Texture */}
+             <div className="dark:hidden absolute inset-0">
+                 <div className="absolute inset-0 bg-gradient-to-b from-white/60 via-transparent to-transparent opacity-80"></div>
+                 <div className="absolute inset-0 opacity-[0.04] bg-[url('https://grainy-gradients.vercel.app/noise.svg')] mix-blend-multiply"></div>
+            </div>
+        </div>
+
+        <div className="max-w-5xl mx-auto relative z-10">
           <div className="flex flex-col gap-4 md:gap-6">
             <div className="flex items-center gap-3 animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
               <span className="px-3 py-1 md:px-4 md:py-1.5 text-[10px] md:text-xs font-bold uppercase tracking-widest border border-slate-900/10 dark:border-white/10 rounded-full bg-white/40 dark:bg-white/5 text-slate-600 dark:text-neutral-300">
@@ -125,12 +149,34 @@ export const ProjectDetail = ({ project, onBack, isPreview = false }: ProjectDet
             )}
             
             <div className="pt-8 flex flex-col sm:flex-row gap-4">
-              <button className="px-6 py-3 bg-slate-900 dark:bg-white text-white dark:text-black rounded-lg font-medium flex items-center justify-center gap-2 hover:bg-slate-800 dark:hover:bg-neutral-200 transition-colors text-sm md:text-base w-full sm:w-auto">
-                <ExternalLink size={18} /> Live Demo
-              </button>
-              <button className="px-6 py-3 bg-white dark:bg-black border border-slate-200 dark:border-neutral-800 text-slate-700 dark:text-neutral-300 rounded-lg font-medium flex items-center justify-center gap-2 hover:border-slate-400 dark:hover:border-neutral-600 transition-colors text-sm md:text-base w-full sm:w-auto">
-                <Github size={18} /> Source Code
-              </button>
+              {project.websiteUrl ? (
+                <a 
+                  href={project.websiteUrl} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="px-6 py-3 bg-slate-900 dark:bg-white text-white dark:text-black rounded-lg font-medium flex items-center justify-center gap-2 hover:bg-slate-800 dark:hover:bg-neutral-200 transition-colors text-sm md:text-base w-full sm:w-auto"
+                >
+                  <ExternalLink size={18} /> Live Demo
+                </a>
+              ) : (
+                <button className="px-6 py-3 bg-slate-900 dark:bg-white text-white dark:text-black rounded-lg font-medium flex items-center justify-center gap-2 hover:bg-slate-800 dark:hover:bg-neutral-200 transition-colors text-sm md:text-base w-full sm:w-auto">
+                  <ExternalLink size={18} /> Live Demo
+                </button>
+              )}
+              {project.sourceCodeUrl ? (
+                <a 
+                  href={project.sourceCodeUrl} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="px-6 py-3 bg-white dark:bg-black border border-slate-200 dark:border-neutral-800 text-slate-700 dark:text-neutral-300 rounded-lg font-medium flex items-center justify-center gap-2 hover:border-slate-400 dark:hover:border-neutral-600 transition-colors text-sm md:text-base w-full sm:w-auto"
+                >
+                  <Github size={18} /> Source Code
+                </a>
+              ) : (
+                <button className="px-6 py-3 bg-white dark:bg-black border border-slate-200 dark:border-neutral-800 text-slate-700 dark:text-neutral-300 rounded-lg font-medium flex items-center justify-center gap-2 hover:border-slate-400 dark:hover:border-neutral-600 transition-colors text-sm md:text-base w-full sm:w-auto">
+                  <Github size={18} /> Source Code
+                </button>
+              )}
             </div>
           </div>
 

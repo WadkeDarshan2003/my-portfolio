@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Layout, Server, Smartphone, PenTool, Monitor, Database, Globe, CheckSquare, Cpu } from 'lucide-react';
+import { Layout, Server, Smartphone, PenTool, Monitor, Database, Globe, CheckSquare, Cpu, Puzzle } from 'lucide-react';
 import { SERVICES_WITH_ICONS, STACK_LOGOS } from '../data';
 
 const IconMap: Record<string, React.ElementType> = {
@@ -12,11 +12,12 @@ const IconMap: Record<string, React.ElementType> = {
   'Database': Database,
   'Globe': Globe,
   'CheckSquare': CheckSquare,
+  'Puzzle': Puzzle,
 };
 
 export const Expertise = () => {
   return (
-    <section className="relative overflow-hidden bg-slate-50 dark:bg-black py-24 md:py-32 transition-colors duration-500">
+    <section id="expertise" className="relative overflow-hidden bg-slate-50 dark:bg-black py-24 md:py-32 transition-colors duration-500">
        
        {/* --- LIVE AURORA BACKGROUND (No Grain) --- */}
        <div className="absolute inset-0 w-full h-full overflow-hidden pointer-events-none">
@@ -53,7 +54,7 @@ export const Expertise = () => {
                     return (
                        <div 
                          key={idx}
-                         className="group flex items-center gap-4 p-5 bg-white/40 dark:bg-neutral-900/40 backdrop-blur-xl border border-slate-200/60 dark:border-white/5 rounded-2xl hover:bg-white/60 dark:hover:bg-neutral-800/60 transition-all duration-300 hover:scale-[1.01] cursor-default shadow-sm hover:shadow-md dark:shadow-none"
+                         className="group flex items-center gap-4 p-5 bg-transparent backdrop-blur-xl border border-slate-200/60 dark:border-white/5 rounded-2xl hover:bg-white/30 dark:hover:bg-white/5 transition-all duration-300 hover:scale-[1.01] cursor-default shadow-sm hover:shadow-md dark:shadow-none"
                        >
                           <div className="shrink-0 w-10 h-10 bg-white dark:bg-white/5 rounded-xl flex items-center justify-center text-slate-700 dark:text-white transition-colors shadow-sm dark:shadow-none">
                              <Icon size={20} strokeWidth={1.5} />
@@ -78,38 +79,36 @@ export const Expertise = () => {
                  <Cpu size={14} /> Technology
               </h3>
 
-              <div className="flex-1 bg-white/40 dark:bg-neutral-900/40 backdrop-blur-xl border border-slate-200/60 dark:border-white/5 rounded-3xl p-8 relative overflow-hidden">
+              <div className="flex-1 bg-transparent backdrop-blur-xl border border-slate-200/80 dark:border-white/10 rounded-3xl p-8 relative overflow-hidden shadow-lg dark:shadow-blue-900/10 transform transition-transform duration-300 hover:shadow-xl hover:-translate-y-1">
                  {/* Inner gradient for card */}
                  <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent dark:from-white/5 dark:to-transparent pointer-events-none"></div>
                  
-                 <div className="flex flex-wrap content-start gap-3 relative z-10">
+                 <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-5 md:gap-x-6 md:gap-y-8 relative z-10 py-4">
                     {STACK_LOGOS.map((tech, i) => {
                        const isReactNative = tech.name === 'React Native';
                        const iconSrc = isReactNative 
                         ? `https://cdn.simpleicons.org/${tech.slug}/ff3333` 
                         : `https://cdn.simpleicons.org/${tech.slug}`;
                        
+                       // Async "Scattered" effect using index-based offsets - Reduced offsets
+                       const offsets = [
+                         "mt-0", "mt-4", "-mt-2", "mt-6", "-mt-4", "mt-2"
+                       ];
+                       const offsetClass = offsets[i % offsets.length];
+                       
                        return (
                           <div 
                             key={i}
-                            className="
-                              pl-2.5 pr-3.5 py-2 
-                              bg-white/70 dark:bg-neutral-800/80 
-                              border border-slate-200/50 dark:border-white/10 
-                              rounded-xl
-                              flex items-center gap-2.5
-                              hover:bg-white hover:scale-105 hover:shadow-lg dark:hover:bg-neutral-700 dark:hover:border-white/20
-                              transition-all duration-300
-                              cursor-default
-                            "
+                            className={`group relative flex items-center justify-center transition-all duration-500 hover:scale-125 ${offsetClass}`}
                           >
                              <img 
                                src={iconSrc} 
                                alt={tech.name}
-                               className="w-4 h-4 object-contain opacity-80 dark:opacity-100 dark:brightness-0 dark:invert transition-all"
+                               className="w-8 h-8 md:w-10 md:h-10 object-contain transition-all duration-300 group-hover:opacity-0 group-hover:scale-50"
                                loading="lazy"
                              />
-                             <span className="text-xs font-semibold text-slate-700 dark:text-neutral-200">
+                             {/* Hover Name Overlay */}
+                             <span className="absolute inset-0 flex items-center justify-center text-[8px] md:text-[9px] font-black text-slate-800 dark:text-white opacity-0 group-hover:opacity-100 transition-all duration-300 whitespace-nowrap uppercase tracking-tighter pointer-events-none">
                                 {tech.name}
                              </span>
                           </div>

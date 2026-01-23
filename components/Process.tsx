@@ -1,5 +1,5 @@
 import React from 'react';
-import { Search, PenTool, Code, CheckCircle, Rocket } from 'lucide-react';
+import { Search, Layers, Code, CheckCircle, Rocket } from 'lucide-react';
 
 const steps = [
   {
@@ -12,7 +12,7 @@ const steps = [
     id: '02',
     title: 'Design',
     description: 'Crafting pixel-perfect interfaces that align with your brand identity.',
-    icon: PenTool,
+    icon: Layers,
   },
   {
     id: '03',
@@ -36,7 +36,7 @@ const steps = [
 
 export const Process = () => {
   return (
-    <section className="py-24 md:py-32 bg-stone-50 dark:bg-black relative overflow-hidden transition-colors duration-300">
+    <section id="process" className="py-24 md:py-32 bg-stone-50 dark:bg-black relative overflow-hidden transition-colors duration-300">
       
       <div className="max-w-7xl mx-auto px-6 relative z-10">
         
