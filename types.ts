@@ -15,6 +15,9 @@ export interface Project {
   details?: { title: string; content: string }[];
   websiteUrl?: string;
   sourceCodeUrl?: string;
+  titleFont?: string;
+  descriptionFont?: string;
+  sectionTitleFont?: string;
 }
 
 export interface ChatMessage {

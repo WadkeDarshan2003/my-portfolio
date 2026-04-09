@@ -6,7 +6,8 @@ import { ProjectDetail } from "./components/ProjectDetail";
 import { AIChat } from "./components/AIChat";
 import { Footer } from "./components/Footer";
 import { AdminPanel } from "./components/AdminPanel";
-import { Navbar } from "./components/Navbar";
+import { AdminLogin } from "./components/AdminLogin";
+import Navbar from "./components/Navbar";
 import { CustomCursor } from "./components/CustomCursor";
 import { Process } from "./components/Process";
 import { Expertise } from "./components/Expertise";
@@ -16,6 +17,8 @@ import { Sun, Moon } from "lucide-react";
 import { getProjects, addProject, updateProject, deleteProject } from "./src/services/projectService";
 import { testFirebaseConnection } from "./src/services/firebaseTest";
 import { migrateProjectsToFirebase, getMigrationStatus } from "./src/services/migrationService";
+import { onUserAuthStateChanged } from "./src/services/authService";
+import { User } from "firebase/auth";
 
 const App = () => {
   // State for Projects (ONLY from Firebase - no fallback)
@@ -26,6 +29,25 @@ const App = () => {
     connected: boolean;
     error?: string;
   }>({ connected: false });
+  
+  // Authentication State
+  const [adminUser, setAdminUser] = useState<User | null>(null);
+  const [isAdminMode, setIsAdminMode] = useState(false);
+  const [showAdminLogin, setShowAdminLogin] = useState(false);
+
+  // Monitor admin authentication state
+  useEffect(() => {
+    const unsubscribe = onUserAuthStateChanged((user) => {
+      setAdminUser(user);
+      if (!user) {
+        // User logged out, exit admin mode
+        setIsAdminMode(false);
+        setShowAdminLogin(false);
+      }
+    });
+
+    return () => unsubscribe();
+  }, []);
   
   // Load projects from Firebase ONLY with auto-migration
   useEffect(() => {
@@ -89,7 +111,6 @@ const App = () => {
   
   // Navigation State
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
-  const [isAdminMode, setIsAdminMode] = useState(false);
 
   // Theme State - Initialize based on system preference
   const [isDarkMode, setIsDarkMode] = useState(() => {
@@ -136,7 +157,7 @@ const App = () => {
       const projectId = await addProject(newProject);
       if (projectId) {
         const projectWithId = { ...newProject, id: projectId };
-        setProjects(prev => [...prev, projectWithId]);
+        setProjects(prev => [projectWithId, ...prev]);
       }
     } catch (error) {
       console.error('Error adding project:', error);
@@ -223,8 +244,20 @@ const App = () => {
     );
   }
 
-  // 1. Admin CMS View
-  if (isAdminMode) {
+  // 1. Admin Login View
+  if (showAdminLogin) {
+    return (
+      <AdminLogin 
+        onLoginSuccess={() => {
+          setShowAdminLogin(false);
+          setIsAdminMode(true);
+        }}
+      />
+    );
+  }
+
+  // 2. Admin CMS View (only accessible after login)
+  if (isAdminMode && adminUser) {
     return (
       <main className="w-full relative min-h-screen bg-white transition-colors duration-300">
         <CustomCursor />
@@ -239,7 +272,7 @@ const App = () => {
     );
   }
 
-  // 2. Project Detail View
+  // 3. Project Detail View
   if (selectedProject) {
     return (
       <main className="w-full relative bg-stone-50 dark:bg-black min-h-screen transition-colors duration-300">
@@ -285,7 +318,7 @@ const App = () => {
   }
 
   return (
-    <main className="w-full relative min-h-screen bg-stone-50 dark:bg-black transition-colors duration-300">
+    <main className="w-full relative min-h-screen bg-stone-50 dark:bg-black transition-colors duration-300 overflow-x-hidden">
       <CustomCursor />
 
       <Navbar projects={projects} />
@@ -308,7 +341,7 @@ const App = () => {
 
       <Hero />
 
-      <div className="relative flex flex-col bg-stone-50 dark:bg-black transition-colors duration-300 overflow-hidden">
+      <div className="relative flex flex-col bg-stone-50 dark:bg-black transition-colors duration-300 gap-10 md:gap-0 px-2 py-2 md:px-0 md:py-0 overflow-x-hidden">
         {/* Project Section Background Decoration - Dark Mode Only */}
         <div className="hidden dark:block absolute inset-0 pointer-events-none">
            <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-blue-600/10 blur-[150px] rounded-full"></div>
@@ -334,7 +367,7 @@ const App = () => {
       
       <Expertise />
 
-      <Footer onAdminClick={() => setIsAdminMode(true)} />
+      <Footer onAdminClick={() => setShowAdminLogin(true)} />
 
       <AIChat />
     </main>

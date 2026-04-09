@@ -17,7 +17,7 @@ const IconMap: Record<string, React.ElementType> = {
 
 export const Expertise = () => {
   return (
-    <section id="expertise" className="relative overflow-hidden bg-slate-50 dark:bg-black py-24 md:py-32 transition-colors duration-500">
+    <section id="expertise" className="relative overflow-hidden bg-pastel-1 dark:bg-black py-24 md:py-32 transition-colors duration-500">
        
        {/* --- LIVE AURORA BACKGROUND (No Grain) --- */}
        <div className="absolute inset-0 w-full h-full overflow-hidden pointer-events-none">
@@ -31,10 +31,10 @@ export const Expertise = () => {
         
         {/* Section Title */}
         <div className="mb-16 md:mb-20">
-            <div className="inline-flex items-center gap-2 px-3 py-1 mb-4 rounded-full bg-white/50 dark:bg-white/5 border border-slate-200 dark:border-white/10 backdrop-blur-md">
+            <div className="inline-flex items-center gap-2 px-3 py-1 mb-4 rounded-full bg-pastel-1/50 dark:bg-white/5 border border-pastel-4 dark:border-white/10 backdrop-blur-md">
                 <span className="text-xs font-bold uppercase tracking-widest text-slate-500 dark:text-neutral-400">Proficiency</span>
             </div>
-            <h2 className="text-4xl md:text-6xl font-serif text-slate-900 dark:text-white tracking-tight">
+            <h2 className="text-4xl md:text-6xl font-serif text-slate-900 dark:text-white tracking-tight" style={{ fontFamily: 'Merienda, serif' }}>
               Expertise & Toolkit
             </h2>
         </div>
@@ -54,9 +54,9 @@ export const Expertise = () => {
                     return (
                        <div 
                          key={idx}
-                         className="group flex items-center gap-4 p-5 bg-transparent backdrop-blur-xl border border-slate-200/60 dark:border-white/5 rounded-2xl hover:bg-white/30 dark:hover:bg-white/5 transition-all duration-300 hover:scale-[1.01] cursor-default shadow-sm hover:shadow-md dark:shadow-none"
+                         className="group flex items-center gap-4 p-5 bg-transparent backdrop-blur-xl border border-pastel-4/60 dark:border-white/5 rounded-2xl hover:bg-pastel-1/30 dark:hover:bg-white/5 transition-all duration-300 hover:scale-[1.01] cursor-default shadow-sm hover:shadow-md dark:shadow-none"
                        >
-                          <div className="shrink-0 w-10 h-10 bg-white dark:bg-white/5 rounded-xl flex items-center justify-center text-slate-700 dark:text-white transition-colors shadow-sm dark:shadow-none">
+                          <div className="shrink-0 w-10 h-10 bg-pastel-1 dark:bg-white/5 rounded-xl flex items-center justify-center text-slate-700 dark:text-white transition-colors shadow-sm dark:shadow-none">
                              <Icon size={20} strokeWidth={1.5} />
                           </div>
                           <div>
@@ -106,6 +106,7 @@ export const Expertise = () => {
                                alt={tech.name}
                                className="w-8 h-8 md:w-10 md:h-10 object-contain transition-all duration-300 group-hover:opacity-0 group-hover:scale-50"
                                loading="lazy"
+                               decoding="async"
                              />
                              {/* Hover Name Overlay */}
                              <span className="absolute inset-0 flex items-center justify-center text-[8px] md:text-[9px] font-black text-slate-800 dark:text-white opacity-0 group-hover:opacity-100 transition-all duration-300 whitespace-nowrap uppercase tracking-tighter pointer-events-none">
@@ -117,7 +118,7 @@ export const Expertise = () => {
                  </div>
 
                  <div className="mt-10 pt-6 border-t border-slate-200/50 dark:border-white/10 flex items-center justify-between text-[10px] text-slate-500 dark:text-neutral-500 uppercase tracking-widest font-bold relative z-10">
-                    <span>15+ Technologies Mastered</span>
+                    <span>15+ Technologies in Practice</span>
                     <span className="flex items-center gap-1.5"><div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.5)]"></div> Constantly Updating</span>
                  </div>
               </div>

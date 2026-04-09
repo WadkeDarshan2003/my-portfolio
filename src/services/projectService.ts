@@ -37,12 +37,14 @@ async function withRetry<T>(
 export async function getProjects(): Promise<Project[]> {
   try {
     console.log('Fetching projects from Firebase...');
-    const snapshot = await getDocs(collection(db, PROJECTS_COLLECTION));
+    const q = query(collection(db, PROJECTS_COLLECTION), orderBy('createdAt', 'desc'));
+    const snapshot = await getDocs(q);
     console.log(`Found ${snapshot.size} projects in Firebase`);
     
     return snapshot.docs.map((doc) => ({
       id: doc.id,
       ...doc.data(),
+      titleFont: 'Public Sans',
     } as unknown as Project));
   } catch (error) {
     console.error('Error fetching projects:', error);
@@ -64,13 +66,10 @@ export async function addProject(
     console.log('✅ Project added with ID:', docRef.id);
     return docRef.id;
   } catch (error: any) {
-    console.error('❌ Error adding project:', error);
-    console.error('Error code:', error.code);
-    console.error('Error message:', error.message);
+    console.error('❌ Failed to add project. Please check if Firestore is in test mode or if your internet is stable.');
     
     if (error.code === 'permission-denied') {
       console.error('🚨 PERMISSION DENIED - Firestore security rules are blocking writes!');
-      console.error('📋 Fix: Go to Firebase Console → Firestore → Rules → Enable test mode');
     }
     return null;
   }
@@ -89,7 +88,7 @@ export async function updateProject(
     });
     return true;
   } catch (error) {
-    console.error('Error updating project:', error);
+    console.error('❌ Failed to update project. The document might not exist or connection was lost.');
     return false;
   }
 }
@@ -100,7 +99,7 @@ export async function deleteProject(projectId: string): Promise<boolean> {
     await deleteDoc(doc(db, PROJECTS_COLLECTION, projectId));
     return true;
   } catch (error) {
-    console.error('Error deleting project:', error);
+    console.error('❌ Failed to delete project. Please try again.');
     return false;
   }
 }

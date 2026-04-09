@@ -30,7 +30,8 @@ export const AIChat = () => {
     setIsLoading(true);
 
     try {
-      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+      // Use standard Vite env variable for the API Key
+      const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_GEMINI_API_KEY });
       
       // Prepare context about the developer
       const context = `
@@ -40,12 +41,13 @@ export const AIChat = () => {
         Skills: ${DEVELOPER_INFO.skills.join(', ')}
         Services Offered: ${DEVELOPER_INFO.services.join(', ')}
         Location: ${DEVELOPER_INFO.location}
-        Contact: ${DEVELOPER_INFO.email}
+        Contact Email: ${DEVELOPER_INFO.email}
+        WhatsApp Link: ${DEVELOPER_INFO.socials.whatsapp}
         
         Here is a list of their projects:
         ${JSON.stringify(PROJECTS)}
         
-        Answer questions concisely and professionally. If you don't know the answer based on this info, say you don't know but suggest contacting them directly.
+        Answer questions concisely and professionally. If you don't know the answer based on this info, say you don't know but suggest contacting them directly via WhatsApp at ${DEVELOPER_INFO.socials.whatsapp}.
         Keep answers under 50 words unless asked for details.
       `;
 
@@ -61,7 +63,7 @@ export const AIChat = () => {
 
       setMessages(prev => [...prev, { role: 'model', text: reply, timestamp: Date.now() }]);
     } catch (error) {
-      console.error(error);
+      console.error('❌ AI Chat Error: Failed to generate response from Gemini API.');
       setMessages(prev => [...prev, { role: 'model', text: "Sorry, I'm having trouble connecting right now.", timestamp: Date.now() }]);
     } finally {
       setIsLoading(false);

@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowUpRight, Github, Linkedin, Twitter, Instagram, Settings } from 'lucide-react';
+import { ArrowUpRight, Github, Linkedin, MessageCircle, Instagram, Settings } from 'lucide-react';
 import { DEVELOPER_INFO } from '../data';
 
 interface FooterProps {
@@ -8,7 +8,7 @@ interface FooterProps {
 
 export const Footer = ({ onAdminClick }: FooterProps) => {
   return (
-    <footer className="bg-white dark:bg-black pt-16 md:pt-20 pb-10 flex flex-col justify-center relative shadow-inner dark:shadow-none border-t border-slate-100 dark:border-neutral-800 transition-colors duration-300">
+    <footer className="bg-pastel-1 dark:bg-black pt-16 md:pt-20 pb-10 flex flex-col justify-center relative shadow-inner dark:shadow-none border-t border-pastel-4 dark:border-neutral-800 transition-colors duration-300">
       <div className="max-w-7xl mx-auto px-6 w-full">
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-16 lg:gap-24 mb-16 md:mb-20">
@@ -17,7 +17,7 @@ export const Footer = ({ onAdminClick }: FooterProps) => {
           <div className="space-y-6 md:space-y-8 flex flex-col justify-center text-center md:text-left">
             <h2 className="text-4xl md:text-5xl lg:text-7xl font-serif text-slate-900 dark:text-neutral-100 leading-tight">
               Have an idea? <br />
-              <span className="text-slate-400 italic">Let's build it.</span>
+              <span className="text-slate-400 italic" style={{ fontFamily: 'Merienda, serif', letterSpacing: '-0.02em' }}>Let's build it.</span>
             </h2>
             <div>
               <a 
@@ -46,8 +46,8 @@ export const Footer = ({ onAdminClick }: FooterProps) => {
                   </a>
                 </li>
                 <li>
-                  <a href={DEVELOPER_INFO.socials.twitter} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-slate-600 dark:text-neutral-400 hover:text-slate-900 dark:hover:text-white transition-colors">
-                    <Twitter size={16} className="md:w-[18px] md:h-[18px]" /> Twitter
+                  <a href={DEVELOPER_INFO.socials.whatsapp} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-slate-600 dark:text-neutral-400 hover:text-slate-900 dark:hover:text-white transition-colors">
+                    <MessageCircle size={16} className="md:w-[18px] md:h-[18px]" /> WhatsApp
                   </a>
                 </li>
                  <li>
@@ -78,8 +78,6 @@ export const Footer = ({ onAdminClick }: FooterProps) => {
            
            <div className="flex flex-col md:flex-row items-center gap-4">
              <span>© {new Date().getFullYear()} {DEVELOPER_INFO.name}</span>
-             <span className="hidden md:inline text-slate-300 dark:text-neutral-700">•</span>
-             <span className="font-serif italic">Designed & Built with Gemini</span>
              {onAdminClick && (
                <button onClick={onAdminClick} className="ml-4 text-slate-400 hover:text-slate-800 dark:hover:text-neutral-200 transition-colors uppercase font-bold text-xs tracking-widest flex items-center gap-1">
                  <Settings size={12} /> ADMIN PANEL

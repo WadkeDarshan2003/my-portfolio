@@ -54,6 +54,7 @@ export const Navbar = ({ projects = [] }: NavbarProps) => {
             src={profileImage} 
             alt={DEVELOPER_INFO.name}
             className="w-full h-full object-cover"
+            decoding="async"
           />
         </button>
       </div>
@@ -61,26 +62,31 @@ export const Navbar = ({ projects = [] }: NavbarProps) => {
       {/* Center Navigation */}
       <nav 
         className={`
-          fixed bottom-6 md:top-6 md:bottom-auto left-1/2 -translate-x-1/2 z-50 transition-all duration-700 w-[90%] md:w-auto
+          fixed bottom-6 md:top-6 md:bottom-auto inset-x-0 z-50 transition-all duration-700 flex justify-center px-4 md:px-0
           ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12 md:-translate-y-4'}
         `}
       >
-        <div className="relative px-1 md:px-2 py-1.5 md:py-2 flex items-center justify-center gap-1">
-          {/* iPhone Style Glass Backdrop - Stabilized */}
+        <div className="relative w-fit max-w-full px-1.5 md:px-2 py-1.5 md:py-2 flex items-center justify-center overflow-hidden rounded-full">
+          {/* Glass Backdrop */}
           <div 
-            className="absolute inset-0 rounded-full border border-white/20 dark:border-white/10 shadow-xl -z-10 bg-white/40 dark:bg-black/50 backdrop-blur-2xl saturate-150 will-change-[backdrop-filter]"
+            className="absolute inset-0 rounded-full border -z-10 backdrop-blur-2xl saturate-150 will-change-[backdrop-filter]
+              bg-white/50 border-white/30 shadow-xl
+              dark:bg-neutral-900/90 dark:border-white/15 dark:shadow-lg"
             style={{ 
               WebkitBackdropFilter: 'blur(20px) saturate(150%)',
             }}
           />
 
           {/* Links */}
-          <ul className="flex items-center gap-0.5 md:gap-1 relative z-10 w-full md:w-auto justify-between md:justify-start">
+          <ul className="flex items-center gap-px md:gap-1 relative z-10 w-auto justify-center">
             {navItems.map((item) => (
-              <li key={item.id} className="flex-1 md:flex-none text-center">
+              <li key={item.id} className="flex-none text-center">
                 <button 
                   onClick={() => handleScroll(item.id)}
-                  className="w-full md:w-auto px-3 md:px-5 py-2 md:py-2.5 text-[10px] md:text-sm font-semibold md:font-medium text-slate-800 dark:text-neutral-200 hover:text-slate-900 dark:hover:text-white hover:bg-slate-900/5 dark:hover:bg-white/10 rounded-full transition-all duration-300 whitespace-nowrap"
+                  className="px-2 md:px-5 py-2.5 text-[10px] md:text-sm font-semibold md:font-medium
+                    text-slate-700 hover:text-slate-900 hover:bg-slate-900/8
+                    dark:text-slate-200 dark:hover:text-white dark:hover:bg-white/10
+                    rounded-full transition-all duration-300 whitespace-nowrap"
                 >
                   {item.label}
                 </button>
@@ -98,3 +104,5 @@ export const Navbar = ({ projects = [] }: NavbarProps) => {
     </>
   );
 };
+
+export default Navbar;

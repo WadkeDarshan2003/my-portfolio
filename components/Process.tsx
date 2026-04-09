@@ -45,7 +45,7 @@ export const Process = () => {
           <span className="text-xs font-bold tracking-[0.2em] text-slate-400 uppercase mb-3 block">My Process</span>
           <h2 className="text-3xl md:text-5xl font-serif text-slate-900 dark:text-neutral-100 leading-tight max-w-2xl">
             A refined path from <br />
-            <span className="italic text-slate-400">concept to completion.</span>
+            <span className="italic text-slate-400" style={{ fontFamily: 'Merienda, serif' }}>concept to completion.</span>
           </h2>
         </div>
 

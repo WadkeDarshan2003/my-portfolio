@@ -1,5 +1,6 @@
-import React, { useEffect } from 'react';
-import { ArrowLeft, Calendar, Layers, Star, ExternalLink, Github } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
+import { ArrowLeft, Calendar, Layers, Star, ExternalLink, Github, X } from 'lucide-react';
 import { Project } from '../types';
 import { getTechUrl } from '../data';
 
@@ -14,10 +15,10 @@ const generateSrcSet = (url: string) => {
   if (!url || !url.includes('images.unsplash.com')) return undefined;
   try {
      const newUrl = new URL(url);
-     const widths = [640, 1024, 1280, 1920];
+     const widths = [640, 768, 1024, 1280, 1536, 1920, 2560];
      return widths.map(w => {
        newUrl.searchParams.set('w', w.toString());
-       newUrl.searchParams.set('q', '80');
+       newUrl.searchParams.set('q', '75');
        newUrl.searchParams.set('auto', 'format');
        return `${newUrl.toString()} ${w}w`;
      }).join(', ');
@@ -27,12 +28,29 @@ const generateSrcSet = (url: string) => {
 };
 
 export const ProjectDetail = ({ project, onBack, isPreview = false }: ProjectDetailProps) => {
+  const [selectedImg, setSelectedImg] = useState<string | null>(null);
+
   // Scroll to top when mounting only if not in preview mode to avoid jumping
   useEffect(() => {
     if (!isPreview) {
       window.scrollTo(0, 0);
     }
   }, [isPreview]);
+
+  // Handle body scroll and escape key for lightbox
+  useEffect(() => {
+    if (selectedImg) {
+      document.body.style.overflow = 'hidden';
+      const handleEsc = (e: KeyboardEvent) => {
+        if (e.key === 'Escape') setSelectedImg(null);
+      };
+      window.addEventListener('keydown', handleEsc);
+      return () => {
+        document.body.style.overflow = '';
+        window.removeEventListener('keydown', handleEsc);
+      };
+    }
+  }, [selectedImg]);
 
   const navPositionClass = isPreview ? "absolute" : "fixed";
   const containerClass = isPreview ? "h-full overflow-y-auto" : "min-h-screen";
@@ -86,7 +104,13 @@ export const ProjectDetail = ({ project, onBack, isPreview = false }: ProjectDet
               </span>
             </div>
             
-            <h1 className="text-4xl md:text-7xl lg:text-8xl font-serif text-slate-900 dark:text-white leading-tight animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
+            <h1 
+              className="text-4xl md:text-7xl lg:text-8xl font-serif text-slate-900 dark:text-white leading-tight animate-fade-in-up" 
+              style={{ 
+                animationDelay: '0.2s',
+                fontFamily: project.titleFont || 'inherit'
+              }}
+            >
               {project.title || "Project Title"}
             </h1>
           </div>
@@ -95,14 +119,14 @@ export const ProjectDetail = ({ project, onBack, isPreview = false }: ProjectDet
 
       {/* Main Image */}
       <div className="w-full px-4 md:px-6 -mt-8 md:-mt-12 relative z-10">
-        <div className="max-w-6xl mx-auto h-[40vh] md:h-[70vh] rounded-2xl md:rounded-[2rem] overflow-hidden shadow-2xl border-2 md:border-4 border-white dark:border-neutral-900 animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
+        <div className="max-w-6xl mx-auto aspect-video md:aspect-auto md:h-[70vh] rounded-2xl md:rounded-[2rem] overflow-hidden shadow-2xl border-2 md:border-4 border-white dark:border-neutral-900 animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
            {project.image ? (
               <img 
                 src={project.image}
                 srcSet={generateSrcSet(project.image)}
                 sizes="(max-width: 1280px) 100vw, 1280px"
                 alt={project.title} 
-                className="w-full h-full object-cover hover:scale-105 transition-transform duration-[2s]" 
+                className="w-full h-full object-cover md:object-cover transition-all duration-700 hover:scale-105" 
                 loading="eager"
                 decoding="async"
                 // @ts-ignore - fetchPriority is standard but types might be outdated
@@ -121,8 +145,16 @@ export const ProjectDetail = ({ project, onBack, isPreview = false }: ProjectDet
           {/* Main Description */}
           <div className="md:col-span-2 space-y-8 animate-fade-in-up" style={{ animationDelay: '0.4s' }}>
             <div>
-              <h3 className="text-xl md:text-2xl font-serif text-slate-800 dark:text-neutral-100 mb-6">Project Overview</h3>
-              <p className="text-base md:text-xl text-slate-600 dark:text-neutral-300 leading-relaxed font-light">
+              <h3 
+                className="text-xl md:text-2xl font-serif text-slate-800 dark:text-neutral-100 mb-6"
+                style={{ fontFamily: project.sectionTitleFont || 'inherit' }}
+              >
+                Project Overview
+              </h3>
+              <p 
+                className="text-base md:text-xl text-slate-600 dark:text-neutral-300 leading-relaxed font-light"
+                style={{ fontFamily: project.descriptionFont || 'inherit' }}
+              >
                 {project.description || "No description provided."}
               </p>
             </div>
@@ -132,21 +164,27 @@ export const ProjectDetail = ({ project, onBack, isPreview = false }: ProjectDet
               <div className="space-y-6 mt-8 border-t border-slate-100 dark:border-neutral-800 pt-8">
                 {project.details.map((section, index) => (
                   <div key={index} className="space-y-2">
-                    <h4 className="text-base md:text-lg font-bold text-slate-800 dark:text-neutral-100">
+                    <h4 
+                      className="text-base md:text-lg font-bold text-slate-800 dark:text-neutral-100"
+                      style={{ fontFamily: project.sectionTitleFont || 'inherit' }}
+                    >
                       {section.title}
                     </h4>
-                    <p className="text-sm md:text-base text-slate-600 dark:text-neutral-300 leading-relaxed">
+                    <p 
+                      className="text-sm md:text-base text-slate-600 dark:text-neutral-300 leading-relaxed"
+                      style={{ fontFamily: project.descriptionFont || 'inherit' }}
+                    >
                       {section.content}
                     </p>
                   </div>
                 ))}
               </div>
-            ) : (
-               // Fallback if no details provided
+            ) : !project.description ? (
+               // Fallback if no details and no description provided
                <p className="text-sm md:text-base text-slate-500 leading-relaxed italic mt-4">
                  Additional details coming soon...
                </p>
-            )}
+            ) : null}
             
             <div className="pt-8 flex flex-col sm:flex-row gap-4">
               {project.websiteUrl ? (
@@ -247,23 +285,63 @@ export const ProjectDetail = ({ project, onBack, isPreview = false }: ProjectDet
                 <span className="w-8 md:w-12 h-px bg-slate-300 dark:bg-neutral-700"></span>
                 Visuals
               </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
+              <div className="columns-1 md:columns-2 lg:columns-3 gap-4 md:gap-6 lg:gap-8 space-y-4 md:space-y-6 lg:space-y-8">
                  {project.gallery.map((img, idx) => (
-                   <div key={idx} className={`rounded-xl md:rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-500 ${idx % 3 === 0 ? 'md:col-span-2' : ''}`}>
+                   <div 
+                     key={idx} 
+                     onClick={() => setSelectedImg(img)}
+                     className="break-inside-avoid relative rounded-xl md:rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-500 bg-slate-200 dark:bg-neutral-800 cursor-zoom-in group"
+                   >
                       <img 
                         src={img}
                         srcSet={generateSrcSet(img)}
-                        sizes="(max-width: 768px) 100vw, 50vw" 
+                        sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw" 
                         alt={`${project.title} screenshot ${idx + 1}`} 
-                        className="w-full h-full object-cover hover:scale-[1.02] transition-transform duration-700"
+                        className="w-full h-auto object-cover transition-transform duration-700 group-hover:scale-[1.1]"
                         loading="lazy"
                         decoding="async"
                       />
+                      {/* Subtle overlay on hover */}
+                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-500 pointer-events-none" />
                    </div>
                  ))}
               </div>
            </div>
         </section>
+      )}
+
+      {/* Image Lightbox - Using Portal to escape stacking context */}
+      {selectedImg && createPortal(
+        <div 
+          className="fixed inset-0 z-[100000] w-screen h-screen overflow-hidden flex flex-col items-center justify-center backdrop-blur-3xl transition-all duration-500 p-4"
+          style={{ touchAction: 'none' }}
+          onClick={() => setSelectedImg(null)}
+        >
+          <div 
+            className="flex flex-col items-center justify-center max-w-full max-h-full relative z-[100001]" 
+            onClick={(e) => e.stopPropagation()}
+          >
+            <img 
+              src={selectedImg} 
+              alt="Expanded preview" 
+              className="max-w-full max-h-[65vh] sm:max-h-[75vh] md:max-h-[80vh] object-contain rounded-lg shadow-[0_50px_100px_-20px_rgba(0,0,0,0.5)] select-none animate-scale-in border border-stone-200/10 dark:border-white/5"
+              style={{ display: 'block' }}
+              decoding="async"
+            />
+
+            <button 
+              onClick={(e) => {
+                e.stopPropagation();
+                setSelectedImg(null);
+              }}
+              className="mt-1 md:mt-2 px-6 py-2 text-black dark:text-white hover:opacity-60 transition-all cursor-pointer font-bold tracking-tight text-[11px] md:text-sm z-[100002] active:scale-95"
+              aria-label="Close image preview"
+            >
+              Close
+            </button>
+          </div>
+        </div>,
+        document.body
       )}
 
     </div>

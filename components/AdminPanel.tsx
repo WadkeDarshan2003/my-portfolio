@@ -32,7 +32,10 @@ const EMPTY_PROJECT: any = {
   gallery: [],
   details: [],
   websiteUrl: "",
-  sourceCodeUrl: ""
+  sourceCodeUrl: "",
+  titleFont: "Playfair Display",
+  descriptionFont: "Inter",
+  sectionTitleFont: "Playfair Display"
 };
 
 const THEME_OPTIONS = [
@@ -44,6 +47,19 @@ const THEME_OPTIONS = [
   { label: 'Teal', value: 'bg-[#F0FDFA]' },
   { label: 'Orange', value: 'bg-[#FFF7ED]' },
   { label: 'Green', value: 'bg-[#F0FFF4]' },
+];
+
+const FONT_OPTIONS = [
+  { label: 'Serif (Premium)', value: 'Playfair Display' },
+  { label: 'Sans (Clean)', value: 'Inter' },
+  { label: 'Modern Sans', value: 'Manrope' },
+  { label: 'Classic Serif', value: 'Lora' },
+  { label: 'Luxury Serif', value: 'Prata' },
+  { label: 'System Serif', value: 'serif' },
+  { label: 'System Sans', value: 'sans-serif' },
+  { label: 'Cormorant (Elegant)', value: 'Cormorant Garamond' },
+  { label: 'Syne (Bold)', value: 'Syne' },
+  { label: 'Bodoni (Stylish)', value: 'Bodoni Moda' },
 ];
 
 export const AdminPanel = ({ projects, onAdd, onUpdate, onDelete, onExit }: AdminPanelProps) => {
@@ -76,10 +92,15 @@ export const AdminPanel = ({ projects, onAdd, onUpdate, onDelete, onExit }: Admi
   };
 
   const handleSave = () => {
+    // Ensure formData has the correct ID
+    const projectToSave = { ...formData, id: editingId || formData.id };
+    
     if (editingId) {
-      onUpdate(formData);
+      // Updating existing project - use editingId
+      onUpdate(projectToSave);
     } else {
-      onAdd(formData);
+      // Adding new project
+      onAdd(projectToSave);
     }
     toast.success("Project saved successfully!");
   };
@@ -363,7 +384,7 @@ export const AdminPanel = ({ projects, onAdd, onUpdate, onDelete, onExit }: Admi
                           value={formData.category} 
                           onChange={e => setFormData({...formData, category: e.target.value})}
                           placeholder="e.g. Web App"
-                          className="w-full p-3 bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-100 outline-none text-sm transition-shadow shadow-sm"
+                          className="w-full p-3 bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-100 outline-none text-sm text-slate-800 transition-shadow shadow-sm"
                         />
                       </div>
                       <div>
@@ -373,7 +394,7 @@ export const AdminPanel = ({ projects, onAdd, onUpdate, onDelete, onExit }: Admi
                           value={formData.duration} 
                           onChange={e => setFormData({...formData, duration: e.target.value})}
                           placeholder="e.g. 2 Weeks"
-                          className="w-full p-3 bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-100 outline-none text-sm transition-shadow shadow-sm"
+                          className="w-full p-3 bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-100 outline-none text-sm text-slate-800 transition-shadow shadow-sm"
                         />
                       </div>
                     </div>
@@ -387,7 +408,7 @@ export const AdminPanel = ({ projects, onAdd, onUpdate, onDelete, onExit }: Admi
                       value={formData.description} 
                       onChange={e => setFormData({...formData, description: e.target.value})}
                       placeholder="Brief summary shown on the project card..."
-                      className="w-full p-3 bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-100 outline-none text-sm leading-relaxed transition-shadow shadow-sm resize-none"
+                      className="w-full p-3 bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-100 outline-none text-sm text-slate-800 leading-relaxed transition-shadow shadow-sm resize-none"
                     />
                   </div>
 
@@ -422,14 +443,14 @@ export const AdminPanel = ({ projects, onAdd, onUpdate, onDelete, onExit }: Admi
                                   value={section.title}
                                   onChange={(e) => updateDetailSection(idx, 'title', e.target.value)}
                                   placeholder="Section Title (e.g. The Challenge)"
-                                  className="w-full bg-transparent border-b border-slate-200 focus:border-blue-400 outline-none text-sm font-bold text-slate-800 pb-1"
+                                  className="w-full bg-transparent border-b border-slate-200 focus:border-blue-400 outline-none text-sm font-bold text-slate-900 pb-1"
                                 />
                                 <textarea 
                                   rows={3}
                                   value={section.content}
                                   onChange={(e) => updateDetailSection(idx, 'content', e.target.value)}
                                   placeholder="Write your story content here..."
-                                  className="w-full bg-white p-2 border border-slate-200 rounded focus:ring-1 focus:ring-blue-100 outline-none text-sm text-slate-600 resize-none"
+                                  className="w-full bg-white p-2 border border-slate-200 rounded focus:ring-1 focus:ring-blue-100 outline-none text-sm text-slate-800 resize-none"
                                 />
                               </div>
                            </div>
@@ -452,17 +473,18 @@ export const AdminPanel = ({ projects, onAdd, onUpdate, onDelete, onExit }: Admi
                           value={formData.speciality} 
                           onChange={e => setFormData({...formData, speciality: e.target.value})}
                           placeholder="e.g. Real-time Synchronization"
-                          className="w-full p-3 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-100 outline-none text-sm"
+                          className="w-full p-3 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-100 outline-none text-sm text-slate-800"
                         />
                     </div>
                     <div>
                        <label className="block text-xs font-bold uppercase text-slate-400 mb-1">Tech Stack (Comma Separated)</label>
+                       <p className="text-[11px] text-slate-500 mb-2">Separate technologies with commas. Spaces within names are preserved (e.g., "Tailwind CSS", "React Native")</p>
                        <input 
                           type="text" 
                           value={formData.stack.join(', ')} 
                           onChange={e => handleArrayInput('stack', e.target.value)}
-                          placeholder="React, TypeScript, Tailwind"
-                          className="w-full p-3 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-100 outline-none text-sm font-mono text-slate-600"
+                          placeholder="React, TypeScript, Tailwind CSS, Node.js"
+                          className="w-full p-3 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-100 outline-none text-sm font-mono text-slate-800"
                         />
                     </div>
                     <div>
@@ -472,7 +494,7 @@ export const AdminPanel = ({ projects, onAdd, onUpdate, onDelete, onExit }: Admi
                           value={formData.websiteUrl || ''} 
                           onChange={e => setFormData({...formData, websiteUrl: e.target.value})}
                           placeholder="https://example.com"
-                          className="w-full p-3 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-100 outline-none text-sm font-mono text-slate-600"
+                          className="w-full p-3 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-100 outline-none text-sm font-mono text-slate-800"
                         />
                     </div>
                     <div>
@@ -482,7 +504,7 @@ export const AdminPanel = ({ projects, onAdd, onUpdate, onDelete, onExit }: Admi
                           value={formData.sourceCodeUrl || ''} 
                           onChange={e => setFormData({...formData, sourceCodeUrl: e.target.value})}
                           placeholder="https://github.com/username/repo"
-                          className="w-full p-3 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-100 outline-none text-sm font-mono text-slate-600"
+                          className="w-full p-3 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-100 outline-none text-sm font-mono text-slate-800"
                         />
                     </div>
                   </div>
@@ -529,7 +551,7 @@ export const AdminPanel = ({ projects, onAdd, onUpdate, onDelete, onExit }: Admi
                         </div>
                         {formData.image && (
                           <div className="mt-4 relative group rounded-lg overflow-hidden border border-slate-200 h-48 bg-slate-100">
-                             <img src={formData.image} alt="Preview" className="w-full h-full object-cover" />
+                             <img src={formData.image} alt="Preview" className="w-full h-full object-cover" loading="lazy" decoding="async" />
                              <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity" />
                           </div>
                         )}
@@ -560,7 +582,7 @@ export const AdminPanel = ({ projects, onAdd, onUpdate, onDelete, onExit }: Admi
                           <div className="grid grid-cols-3 gap-2 mt-4">
                              {formData.gallery.map((img: string, idx: number) => (
                                <div key={idx} className="aspect-square relative group rounded-md overflow-hidden border border-slate-200 bg-slate-100">
-                                 <img src={img} alt={`Gallery ${idx}`} className="w-full h-full object-cover" />
+                                 <img src={img} alt={`Gallery ${idx}`} className="w-full h-full object-cover" loading="lazy" decoding="async" />
                                  <button 
                                    onClick={() => removeGalleryImage(idx)}
                                    title="Remove Gallery Image"
@@ -576,13 +598,60 @@ export const AdminPanel = ({ projects, onAdd, onUpdate, onDelete, onExit }: Admi
                      </div>
                   </div>
 
+                  {/* Typography */}
+                  <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-6">
+                     <h3 className="text-sm font-bold text-slate-800 border-b border-slate-100 pb-3">Typography (Google Fonts)</h3>
+                     
+                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                           <label className="block text-xs font-bold uppercase text-slate-400 mb-2">Title Font</label>
+                           <select 
+                             value={formData.titleFont || 'Playfair Display'}
+                             onChange={(e) => setFormData({ ...formData, titleFont: e.target.value })}
+                             className="w-full p-3 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-100 outline-none text-sm text-slate-800"
+                           >
+                             {FONT_OPTIONS.map(font => (
+                               <option key={font.value} value={font.value} className="text-slate-800">{font.label}</option>
+                             ))}
+                           </select>
+                        </div>
+
+                        <div>
+                           <label className="block text-xs font-bold uppercase text-slate-400 mb-2">Section Headings Font</label>
+                           <select 
+                             value={formData.sectionTitleFont || 'Playfair Display'}
+                             onChange={(e) => setFormData({ ...formData, sectionTitleFont: e.target.value })}
+                             className="w-full p-3 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-100 outline-none text-sm text-slate-800"
+                           >
+                             {FONT_OPTIONS.map(font => (
+                               <option key={font.value} value={font.value} className="text-slate-800">{font.label}</option>
+                             ))}
+                           </select>
+                        </div>
+
+                        <div className="md:col-span-2">
+                           <label className="block text-xs font-bold uppercase text-slate-400 mb-2">Description / Body Font</label>
+                           <select 
+                             value={formData.descriptionFont || 'Inter'}
+                             onChange={(e) => setFormData({ ...formData, descriptionFont: e.target.value })}
+                             className="w-full p-3 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-100 outline-none text-sm text-slate-800"
+                           >
+                             {FONT_OPTIONS.map(font => (
+                               <option key={font.value} value={font.value} className="text-slate-800">{font.label}</option>
+                             ))}
+                           </select>
+                           <p className="mt-2 text-[10px] text-slate-400 italic">Preview your changes using the "Preview Page" button at the top.</p>
+                        </div>
+                     </div>
+                  </div>
+
                 </div>
             </div>
           )}
 
           {viewMode === 'preview-card' && (
              <div className="w-full min-h-full flex items-center justify-center p-8 bg-stone-200">
-                <div className="w-full max-w-lg aspect-[4/5] md:aspect-square bg-white shadow-2xl rounded-sm overflow-hidden border border-slate-300">
+                <div className="w-full max-w-lg aspect-square bg-white shadow-2xl rounded-sm overflow-hidden border border-slate-300">
                    <ProjectCard project={formData} isPreview={true} />
                 </div>
              </div>

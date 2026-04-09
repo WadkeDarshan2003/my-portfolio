@@ -12,7 +12,7 @@ export async function isDatabaseEmpty(): Promise<boolean> {
     const snapshot = await getDocs(collection(db, PROJECTS_COLLECTION));
     return snapshot.empty;
   } catch (error) {
-    console.error('Error checking database:', error);
+    console.error('❌ Could not verify database state. Defaulting to empty.');
     return true; // Assume empty on error
   }
 }
@@ -37,14 +37,15 @@ export async function migrateProjectsToFirebase(
     const projectsRef = collection(db, PROJECTS_COLLECTION);
 
     // Add all projects to the batch
+    const now = Date.now();
     projects.forEach((project, index) => {
       const { id, ...projectData } = project; // Remove old ID
       const newDocRef = doc(projectsRef);
       
       batch.set(newDocRef, {
         ...projectData,
-        createdAt: new Date(),
-        updatedAt: new Date(),
+        createdAt: new Date(now + index * 1000), // Increment by 1 second to preserve order
+        updatedAt: new Date(now + index * 1000),
       });
       
       console.log(`📦 [${index + 1}/${projects.length}] Added to batch: ${project.title}`);
@@ -62,7 +63,7 @@ export async function migrateProjectsToFirebase(
       errors: [],
     };
   } catch (error) {
-    const errorMsg = error instanceof Error ? error.message : 'Unknown error';
+    const errorMsg = 'Transaction failed or network error.';
     console.error('❌ Batch migration failed:', errorMsg);
     
     return {
@@ -88,7 +89,7 @@ export async function getMigrationStatus(): Promise<{
       projectCount: snapshot.size,
     };
   } catch (error) {
-    console.error('Error getting migration status:', error);
+    console.error('❌ Failed to retrieve database statistics.');
     return {
       isDatabaseEmpty: true,
       projectCount: 0,

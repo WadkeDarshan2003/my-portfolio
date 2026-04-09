@@ -20,7 +20,7 @@ export async function uploadFile(file: File, path: string): Promise<string> {
         console.log('Upload is ' + progress + '% done');
       },
       (error) => {
-        console.error('Upload failed:', error);
+        console.error('❌ File upload failed. Ensure the file is valid and you have a stable connection.');
         reject(error);
       },
       async () => {

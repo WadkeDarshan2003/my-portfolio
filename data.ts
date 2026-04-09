@@ -14,6 +14,7 @@ export const TECH_LINKS: Record<string, string> = {
   "GitLab": "https://about.gitlab.com/",
   "GitHub": "https://github.com/",
   "WordPress": "https://wordpress.com/",
+  "Shopify": "https://www.shopify.com/",
   "CSS": "https://www.w3schools.com/css/",
   "Tailwind CSS": "https://tailwindcss.com/",
   "Tailwind": "https://tailwindcss.com/",
@@ -52,6 +53,7 @@ export const STACK_LOGOS = [
   { name: "SQL", slug: "mysql" }, // Using MySQL as generic SQL logo
   { name: "GitLab", slug: "gitlab" },
   { name: "WordPress", slug: "wordpress" },
+  { name: "Shopify", slug: "shopify" },
   { name: "Tailwind CSS", slug: "tailwindcss" },
   { name: "Bootstrap", slug: "bootstrap" },
   { name: "Framer Motion", slug: "framer" },
@@ -68,7 +70,7 @@ export const DEVELOPER_INFO = {
     "React", "React Native", "Node.js", "Express.js", "MongoDB", "TypeScript", 
     "JavaScript", "Python",
     "Generative AI", "Firebase", "SQL",
-    "GitLab", "GitHub", "WordPress", "Tailwind CSS", "Bootstrap", "Framer Motion"
+    "GitLab", "GitHub", "WordPress", "Shopify", "Tailwind CSS", "Bootstrap", "Framer Motion"
   ],
   // Deliverables (What I build)
   services: [
@@ -82,12 +84,13 @@ export const DEVELOPER_INFO = {
     "To-Do Applications"
   ],
   socials: {
-    github: "https://github.com",
-    linkedin: "https://linkedin.com",
-    twitter: "https://twitter.com",
-    instagram: "https://instagram.com"
+    github: "https://github.com/WadkeDarshan2003",
+    linkedin: "https://linkedin.com/in/darshanwadke",
+    whatsapp: "https://wa.me/919307710946",
+    instagram: "https://www.instagram.com/_darshan_sachin_wadke/"
   },
-  location: "San Francisco, CA",
+  location: "India",
+  phone: "+91 9307710946",
   email: "wadkedarshan2003@gmail.com",
   avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=2574&auto=format&fit=crop"
 };
@@ -96,6 +99,7 @@ export const PROJECTS: Project[] = [
   {
     id: 1,
     title: "Zenith Fitness",
+    titleFont: 'Public Sans',
     category: "Mobile Application",
     description: "A comprehensive health tracking app featuring workout plans, calorie counting, and real-time heart rate monitoring via Bluetooth integration.",
     stack: ["React Native", "Firebase", "HealthKit"],
@@ -115,6 +119,7 @@ export const PROJECTS: Project[] = [
   {
     id: 2,
     title: "Titan Asset Manager",
+    titleFont: 'Public Sans',
     category: "Windows Application",
     description: "Native desktop software for enterprise IT asset management. Features local network scanning, hardware auditing, and report generation.",
     stack: ["C#", ".NET MAUI", "SQL Server"],
@@ -133,6 +138,7 @@ export const PROJECTS: Project[] = [
   {
     id: 3,
     title: "Nova Press CMS",
+    titleFont: 'Public Sans',
     category: "CMS System",
     description: "A headless content management system designed for digital newsrooms. Supports custom workflows, multi-role editing, and instant API deployment.",
     stack: ["Node.js", "GraphQL", "MongoDB"],
@@ -152,6 +158,7 @@ export const PROJECTS: Project[] = [
   {
     id: 4,
     title: "Lens & Light",
+    titleFont: 'Public Sans',
     category: "Portfolio Website",
     description: "An immersive portfolio for an award-winning photographer. Uses heavy GPU acceleration for smooth transitions between high-res galleries.",
     stack: ["Astro", "Three.js", "Tailwind"],
@@ -170,6 +177,7 @@ export const PROJECTS: Project[] = [
   {
     id: 5,
     title: "Apex Consulting",
+    titleFont: 'Public Sans',
     category: "Business Web Presence",
     description: "Corporate website for a top-tier consultancy firm. Focuses on accessibility, SEO dominance, and fast load times for global clients.",
     stack: ["Next.js", "Sanity", "Vercel"],
@@ -189,6 +197,7 @@ export const PROJECTS: Project[] = [
   {
     id: 6,
     title: "Global Chain ERP",
+    titleFont: 'Public Sans',
     category: "ERP Solution",
     description: "Large-scale Enterprise Resource Planning system for logistics. Modules include supply chain tracking, warehouse management, and HR.",
     stack: ["Angular", "Java Spring", "PostgreSQL"],
@@ -207,6 +216,7 @@ export const PROJECTS: Project[] = [
   {
     id: 7,
     title: "TaskFlow Pro",
+    titleFont: 'Public Sans',
     category: "To-Do Application",
     description: "A productivity app focusing on the flow state. Features Kanban boards, pomodoro timers, and offline-first synchronization.",
     stack: ["Vue.js", "Pinia", "PWA"],
@@ -226,6 +236,7 @@ export const PROJECTS: Project[] = [
   {
     id: 8,
     title: "Botanical Store",
+    titleFont: 'Public Sans',
     category: "E-Commerce",
     description: "A boutique plant shop website with a focus on serene aesthetics and user experience.",
     stack: ["Shopify", "Liquid", "JS"],
