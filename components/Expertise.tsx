@@ -1,7 +1,12 @@
 
-import React from 'react';
+import React, { useRef } from 'react';
 import { Layout, Server, Smartphone, PenTool, Monitor, Database, Globe, CheckSquare, Cpu, Puzzle } from 'lucide-react';
 import { SERVICES_WITH_ICONS, STACK_LOGOS } from '../data';
+import { gsap } from 'gsap';
+import { useGSAP } from '@gsap/react';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+
+gsap.registerPlugin(ScrollTrigger);
 
 const IconMap: Record<string, React.ElementType> = {
   'Layout': Layout,
@@ -16,8 +21,67 @@ const IconMap: Record<string, React.ElementType> = {
 };
 
 export const Expertise = () => {
+  const containerRef = useRef<HTMLElement>(null);
+  const titleGroupRef = useRef<HTMLDivElement>(null);
+  const servicesRef = useRef<HTMLDivElement>(null);
+  const techStackRef = useRef<HTMLDivElement>(null);
+
+  useGSAP(() => {
+    // Title animation
+    gsap.fromTo(titleGroupRef.current,
+      { y: 50, opacity: 0 },
+      {
+        y: 0,
+        opacity: 1,
+        duration: 0.8,
+        ease: "power2.out",
+        scrollTrigger: {
+          trigger: titleGroupRef.current,
+          start: "top 85%",
+          toggleActions: "play none none reverse",
+        }
+      }
+    );
+
+    // Stagger services
+    if (servicesRef.current) {
+      gsap.fromTo(servicesRef.current.children,
+        { x: -50, opacity: 0 },
+        {
+          x: 0,
+          opacity: 1,
+          stagger: 0.1,
+          duration: 0.6,
+          ease: "power2.out",
+          scrollTrigger: {
+            trigger: servicesRef.current,
+            start: "top 80%",
+            toggleActions: "play none none reverse",
+          }
+        }
+      );
+    }
+
+    // Tech Stack animation
+    gsap.fromTo(techStackRef.current,
+      { scale: 0.9, opacity: 0 },
+      {
+        scale: 1,
+        opacity: 1,
+        duration: 0.8,
+        ease: "back.out(1.2)",
+        scrollTrigger: {
+          trigger: techStackRef.current,
+          start: "top 80%",
+          toggleActions: "play none none reverse",
+        }
+      }
+    );
+
+  }, { scope: containerRef });
+
   return (
-    <section id="expertise" className="relative overflow-hidden bg-pastel-1 dark:bg-black py-24 md:py-32 transition-colors duration-500">
+    <section ref={containerRef} id="expertise" className="relative overflow-hidden bg-pastel-1 dark:bg-black py-24 md:py-32 transition-colors duration-500">
        
        {/* --- LIVE AURORA BACKGROUND (No Grain) --- */}
        <div className="absolute inset-0 w-full h-full overflow-hidden pointer-events-none">
@@ -30,7 +94,7 @@ export const Expertise = () => {
       <div className="max-w-7xl mx-auto px-6 relative z-10">
         
         {/* Section Title */}
-        <div className="mb-16 md:mb-20">
+        <div ref={titleGroupRef} className="mb-16 md:mb-20">
             <div className="inline-flex items-center gap-2 px-3 py-1 mb-4 rounded-full bg-pastel-1/50 dark:bg-white/5 border border-pastel-4 dark:border-white/10 backdrop-blur-md">
                 <span className="text-xs font-bold uppercase tracking-widest text-slate-500 dark:text-neutral-400">Proficiency</span>
             </div>
@@ -48,7 +112,7 @@ export const Expertise = () => {
                  <PenTool size={14} /> Capabilities
               </h3>
               
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div ref={servicesRef} className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                  {SERVICES_WITH_ICONS.map((service, idx) => {
                     const Icon = IconMap[service.icon] || Layout;
                     return (
@@ -73,15 +137,15 @@ export const Expertise = () => {
               </div>
            </div>
 
-           {/* RIGHT: Tech Stack */}
-           <div className="lg:col-span-5 flex flex-col">
-              <h3 className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-8 flex items-center gap-2">
-                 <Cpu size={14} /> Technology
-              </h3>
+            {/* RIGHT: Tech Stack */}
+            <div className="lg:col-span-5 flex flex-col">
+               <h3 className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-8 flex items-center gap-2">
+                  <Cpu size={14} /> Technology
+               </h3>
 
-              <div className="flex-1 bg-transparent backdrop-blur-xl border border-slate-200/80 dark:border-white/10 rounded-3xl p-8 relative overflow-hidden shadow-lg dark:shadow-blue-900/10 transform transition-transform duration-300 hover:shadow-xl hover:-translate-y-1">
-                 {/* Inner gradient for card */}
-                 <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent dark:from-white/5 dark:to-transparent pointer-events-none"></div>
+               <div ref={techStackRef} className="flex-1 bg-transparent backdrop-blur-xl border border-slate-200/80 dark:border-white/10 rounded-3xl p-8 relative overflow-hidden shadow-lg dark:shadow-blue-900/10 transform transition-transform duration-300 hover:shadow-xl hover:-translate-y-1">
+                  {/* Inner gradient for card */}
+                  <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent dark:from-white/5 dark:to-transparent pointer-events-none"></div>
                  
                  <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-5 md:gap-x-6 md:gap-y-8 relative z-10 py-4">
                     {STACK_LOGOS.map((tech, i) => {

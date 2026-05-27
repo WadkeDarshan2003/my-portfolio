@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Project } from '../types';
 import { Clock, Layers, Star, ArrowUpRight } from 'lucide-react';
 
@@ -27,6 +27,13 @@ const generateSrcSet = (url: string) => {
   }
 };
 
+const truncateWords = (text: string | undefined, maxWords: number) => {
+  if (!text) return "Project description goes here...";
+  const words = text.split(/\s+/);
+  if (words.length <= maxWords) return text;
+  return words.slice(0, maxWords).join(' ') + '...';
+};
+
 export const ProjectCard = ({ 
   project, 
   onClick, 
@@ -37,6 +44,8 @@ export const ProjectCard = ({
   isPreview?: boolean;
 }) => {
   const [isHovered, setIsHovered] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const imageRef = useRef<HTMLImageElement>(null);
 
   // Layout classes
   const containerClasses = isPreview
@@ -45,6 +54,7 @@ export const ProjectCard = ({
 
   return (
     <div 
+      ref={containerRef}
       className={`${containerClasses} ${project.bgColor} dark:bg-[#020202]`}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
@@ -107,13 +117,14 @@ export const ProjectCard = ({
            <div className={`relative w-full md:w-full h-auto aspect-video md:h-full overflow-hidden shadow-2xl transition-all duration-700 rounded-lg md:rounded-lg border border-white/20 dark:border-white/5 ${isHovered ? 'scale-105 shadow-[0_30px_60px_-12px_rgba(0,0,0,0.15)] dark:shadow-[0_0_50px_-12px_rgba(255,255,255,0.1)]' : 'scale-100'}`}>
              {project.image ? (
                <img 
+                 ref={imageRef}
                  src={project.image}
                  srcSet={generateSrcSet(project.image)}
                  sizes="(max-width: 480px) 100vw, (max-width: 768px) 100vw, 50vw"
                  alt={project.title} 
                  loading="lazy"
                  decoding="async"
-                 className="w-full h-full object-cover md:object-cover transition-all duration-700"
+                 className="w-full h-full object-cover md:object-cover transition-all duration-700 md:scale-110"
                />
              ) : (
                <div className="w-full h-full bg-pastel-4 dark:bg-neutral-900 flex items-center justify-center text-slate-400">No Image</div>
@@ -149,10 +160,10 @@ export const ProjectCard = ({
         <div className="mt-auto transform transition-all duration-500 ease-in-out relative z-20 group-hover:translate-y-0 translate-y-3">
            <div className="bg-pastel-1/90 dark:bg-neutral-900/90 backdrop-blur-xl border border-pastel-1/50 dark:border-white/10 p-5 rounded-xl shadow-lg hover:shadow-xl transition-all">
               <p 
-                className="text-slate-700 dark:text-neutral-300 mb-4 text-sm leading-relaxed line-clamp-3 md:line-clamp-none font-normal"
+                className="text-slate-700 dark:text-neutral-300 mb-4 text-sm leading-relaxed font-normal"
                 style={{ fontFamily: project.descriptionFont || 'inherit' }}
               >
-                {project.description || "Project description goes here..."}
+                {truncateWords(project.description, 25)}
               </p>
               
               <div className="flex flex-col gap-3">

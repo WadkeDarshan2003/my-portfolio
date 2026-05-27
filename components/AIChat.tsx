@@ -1,8 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { MessageSquare, X, Send, Brain, Loader2 } from 'lucide-react';
-import { GoogleGenAI } from "@google/genai";
 import { ChatMessage } from '../types';
-import { DEVELOPER_INFO, PROJECTS } from '../data';
+import { DEVELOPER_INFO } from '../data';
+import { sendChatMessage } from '../src/services/openclawService';
 
 export const AIChat = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -11,6 +11,8 @@ export const AIChat = () => {
   const [messages, setMessages] = useState<ChatMessage[]>([
     { role: 'model', text: `Hi! I'm an AI assistant. Ask me anything about ${DEVELOPER_INFO.name}'s skills or projects.`, timestamp: Date.now() }
   ]);
+  const [quotaExhausted, setQuotaExhausted] = useState(false);
+  const [retryTime, setRetryTime] = useState<number | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -22,7 +24,7 @@ export const AIChat = () => {
   }, [messages, isOpen]);
 
   const handleSend = async () => {
-    if (!input.trim() || isLoading) return;
+    if (!input.trim() || isLoading || quotaExhausted) return;
 
     const userMsg = input;
     setInput('');
@@ -30,41 +32,33 @@ export const AIChat = () => {
     setIsLoading(true);
 
     try {
-      // Use standard Vite env variable for the API Key
-      const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_GEMINI_API_KEY });
-      
-      // Prepare context about the developer
-      const context = `
-        You are a helpful portfolio assistant for ${DEVELOPER_INFO.name}.
-        Bio: ${DEVELOPER_INFO.bio}
-        Role: ${DEVELOPER_INFO.role}
-        Skills: ${DEVELOPER_INFO.skills.join(', ')}
-        Services Offered: ${DEVELOPER_INFO.services.join(', ')}
-        Location: ${DEVELOPER_INFO.location}
-        Contact Email: ${DEVELOPER_INFO.email}
-        WhatsApp Link: ${DEVELOPER_INFO.socials.whatsapp}
-        
-        Here is a list of their projects:
-        ${JSON.stringify(PROJECTS)}
-        
-        Answer questions concisely and professionally. If you don't know the answer based on this info, say you don't know but suggest contacting them directly via WhatsApp at ${DEVELOPER_INFO.socials.whatsapp}.
-        Keep answers under 50 words unless asked for details.
-      `;
-
-      const response = await ai.models.generateContent({
-        model: 'gemini-3-flash-preview',
-        contents: userMsg,
-        config: {
-          systemInstruction: context,
-        }
-      });
-
-      const reply = response.text || "I couldn't generate a response. Please try again.";
-
+      const reply = await sendChatMessage(userMsg);
       setMessages(prev => [...prev, { role: 'model', text: reply, timestamp: Date.now() }]);
     } catch (error) {
-      console.error('❌ AI Chat Error: Failed to generate response from Gemini API.');
-      setMessages(prev => [...prev, { role: 'model', text: "Sorry, I'm having trouble connecting right now.", timestamp: Date.now() }]);
+      console.error('❌ OpenClaw Chat Error:', error);
+      const errorMsg = error instanceof Error ? error.message : 'Failed to generate response';
+      
+      // Check for rate limit/quota errors
+      if (errorMsg.includes('429') || errorMsg.includes('rate limit') || errorMsg.includes('quota')) {
+        setQuotaExhausted(true);
+        setMessages(prev => [...prev, { 
+          role: 'model', 
+          text: "Sorry! Please try again in a few moments.", 
+          timestamp: Date.now() 
+        }]);
+      } else if (errorMsg.includes('401') || errorMsg.includes('Unauthorized') || errorMsg.includes('invalid')) {
+        setMessages(prev => [...prev, { 
+          role: 'model', 
+          text: "Error: API configuration issue. Please check your settings.", 
+          timestamp: Date.now() 
+        }]);
+      } else {
+        setMessages(prev => [...prev, { 
+          role: 'model', 
+          text: `Error: ${errorMsg}`, 
+          timestamp: Date.now() 
+        }]);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -124,14 +118,15 @@ export const AIChat = () => {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-              placeholder="Ask about my skills..."
-              className="flex-1 px-3 py-2 text-sm bg-slate-50 dark:bg-neutral-950 border border-slate-200 dark:border-neutral-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-200 dark:focus:ring-neutral-700 transition-all text-slate-700 dark:text-neutral-200"
+              placeholder={quotaExhausted ? "API quota exceeded..." : "Ask about my skills..."}
+              disabled={quotaExhausted}
+              className="flex-1 px-3 py-2 text-sm bg-slate-50 dark:bg-neutral-950 border border-slate-200 dark:border-neutral-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-200 dark:focus:ring-neutral-700 transition-all text-slate-700 dark:text-neutral-200 disabled:opacity-50 disabled:cursor-not-allowed"
             />
             <button 
               onClick={handleSend}
-              disabled={isLoading || !input.trim()}
+              disabled={isLoading || !input.trim() || quotaExhausted}
               aria-label="Send message"
-              title="Send message"
+              title={quotaExhausted ? "API quota exceeded. Try again tomorrow." : "Send message"}
               className="p-2 bg-slate-800 dark:bg-neutral-800 text-white rounded-lg hover:bg-slate-700 dark:hover:bg-neutral-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               <Send size={18} />

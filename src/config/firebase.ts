@@ -3,6 +3,7 @@ import { getFirestore, connectFirestoreEmulator } from 'firebase/firestore';
 import { getAuth, connectAuthEmulator } from 'firebase/auth';
 import { getStorage, connectStorageEmulator } from 'firebase/storage';
 import { getAnalytics } from 'firebase/analytics';
+import { getFunctions, connectFunctionsEmulator } from 'firebase/functions';
 
 // Firebase config from environment variables
 const firebaseConfig = {
@@ -23,6 +24,7 @@ export const db = getFirestore(app);
 export const auth = getAuth(app);
 export const storage = getStorage(app);
 export const analytics = getAnalytics(app);
+export const functions = getFunctions(app);
 
 // Optional: Use emulators for local development
 if (import.meta.env.DEV) {
@@ -30,6 +32,7 @@ if (import.meta.env.DEV) {
   // connectFirestoreEmulator(db, 'localhost', 8080);
   // connectAuthEmulator(auth, 'http://localhost:9099');
   // connectStorageEmulator(storage, 'localhost', 9199);
+  // connectFunctionsEmulator(functions, 'localhost', 5001);
 }
 
 export default app;
