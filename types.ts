@@ -1,5 +1,5 @@
 export interface Project {
-  id: number;
+  id: string | number;
   title: string;
   category: string;
   description: string;
@@ -9,9 +9,15 @@ export interface Project {
   image: string;
   theme: 'light' | 'dark';
   bgColor: string;
+  darkGradient?: string;
   status: 'published' | 'draft';
   gallery?: string[];
   details?: { title: string; content: string }[];
+  websiteUrl?: string;
+  sourceCodeUrl?: string;
+  titleFont?: string;
+  descriptionFont?: string;
+  sectionTitleFont?: string;
 }
 
 export interface ChatMessage {

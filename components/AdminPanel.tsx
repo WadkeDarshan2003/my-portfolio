@@ -1,32 +1,41 @@
 
 import React, { useState } from 'react';
 import { Project } from '../types';
-import { Plus, Trash2, Save, Layout, Monitor, Edit3, ArrowLeft, Upload, X, Image as ImageIcon, Menu, PanelLeftClose, PanelLeftOpen, CheckCircle, CircleDashed } from 'lucide-react';
+import { Plus, Trash2, Save, Layout, Monitor, Edit3, ArrowLeft, Upload, X, Image as ImageIcon, Menu, PanelLeftClose, PanelLeftOpen, Rocket, CircleDashed, Loader2 } from 'lucide-react';
 import { ProjectCard } from './ProjectPair';
 import { ProjectDetail } from './ProjectDetail';
+import { Toast, useToast } from './Toast';
+import { CustomCursor } from './CustomCursor';
+import { uploadFile } from '../src/services/storageService';
 
 interface AdminPanelProps {
   projects: Project[];
   onAdd: (project: Project) => void;
   onUpdate: (project: Project) => void;
-  onDelete: (id: number) => void;
+  onDelete: (id: number | string) => void;
   onExit: () => void;
 }
 
-const EMPTY_PROJECT: Project = {
+const EMPTY_PROJECT: any = {
   id: 0,
-  title: '',
-  category: '',
-  description: '',
+  title: "",
+  category: "",
+  description: "",
   stack: [],
-  duration: '',
-  speciality: '',
-  image: '',
-  theme: 'light',
-  bgColor: 'bg-[#F8FAFC]',
-  status: 'draft',
+  duration: "",
+  speciality: "",
+  image: "",
+  theme: "light",
+  bgColor: "bg-[#F8FAFC]",
+  hexColor: "#64748b",
+  status: "draft",
   gallery: [],
-  details: []
+  details: [],
+  websiteUrl: "",
+  sourceCodeUrl: "",
+  titleFont: "Playfair Display",
+  descriptionFont: "Inter",
+  sectionTitleFont: "Playfair Display"
 };
 
 const THEME_OPTIONS = [
@@ -40,11 +49,26 @@ const THEME_OPTIONS = [
   { label: 'Green', value: 'bg-[#F0FFF4]' },
 ];
 
+const FONT_OPTIONS = [
+  { label: 'Serif (Premium)', value: 'Playfair Display' },
+  { label: 'Sans (Clean)', value: 'Inter' },
+  { label: 'Modern Sans', value: 'Manrope' },
+  { label: 'Classic Serif', value: 'Lora' },
+  { label: 'Luxury Serif', value: 'Prata' },
+  { label: 'System Serif', value: 'serif' },
+  { label: 'System Sans', value: 'sans-serif' },
+  { label: 'Cormorant (Elegant)', value: 'Cormorant Garamond' },
+  { label: 'Syne (Bold)', value: 'Syne' },
+  { label: 'Bodoni (Stylish)', value: 'Bodoni Moda' },
+];
+
 export const AdminPanel = ({ projects, onAdd, onUpdate, onDelete, onExit }: AdminPanelProps) => {
-  const [editingId, setEditingId] = useState<number | null>(null);
+  const [editingId, setEditingId] = useState<number | string | null>(null);
   const [formData, setFormData] = useState<Project>(EMPTY_PROJECT);
   const [viewMode, setViewMode] = useState<'edit' | 'preview-card' | 'preview-page'>('edit');
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isUploading, setIsUploading] = useState(false);
+  const toast = useToast();
 
   // Load project into form
   const handleEdit = (project: Project) => {
@@ -58,7 +82,7 @@ export const AdminPanel = ({ projects, onAdd, onUpdate, onDelete, onExit }: Admi
   };
 
   const handleCreate = () => {
-    const newId = Math.max(0, ...projects.map(p => p.id)) + 1;
+    const newId = Date.now(); // Use timestamp for new IDs
     setFormData({ ...EMPTY_PROJECT, id: newId });
     setEditingId(null);
     setViewMode('edit');
@@ -68,15 +92,20 @@ export const AdminPanel = ({ projects, onAdd, onUpdate, onDelete, onExit }: Admi
   };
 
   const handleSave = () => {
+    // Ensure formData has the correct ID
+    const projectToSave = { ...formData, id: editingId || formData.id };
+    
     if (editingId) {
-      onUpdate(formData);
+      // Updating existing project - use editingId
+      onUpdate(projectToSave);
     } else {
-      onAdd(formData);
+      // Adding new project
+      onAdd(projectToSave);
     }
-    alert("Project saved successfully!");
+    toast.success("Project saved successfully!");
   };
 
-  const handleDelete = (id: number) => {
+  const handleDelete = (id: number | string) => {
     if (window.confirm('Are you sure you want to delete this project?')) {
       onDelete(id);
       if (editingId === id) {
@@ -94,24 +123,19 @@ export const AdminPanel = ({ projects, onAdd, onUpdate, onDelete, onExit }: Admi
     setFormData({ ...formData, [field]: arr });
   };
 
-  // Convert File to Base64
-  const readFileAsDataURL = (file: File): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result as string);
-      reader.onerror = reject;
-      reader.readAsDataURL(file);
-    });
-  };
-
   const handleMainImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
       try {
-        const base64Url = await readFileAsDataURL(file);
-        setFormData({ ...formData, image: base64Url });
+        setIsUploading(true);
+        const path = `projects/${Date.now()}_${file.name}`;
+        const url = await uploadFile(file, path);
+        setFormData({ ...formData, image: url });
+        toast.success("Main image uploaded!");
       } catch (err) {
-        alert("Failed to read file");
+        toast.error("Failed to upload image");
+      } finally {
+        setIsUploading(false);
       }
     }
   };
@@ -119,19 +143,26 @@ export const AdminPanel = ({ projects, onAdd, onUpdate, onDelete, onExit }: Admi
   const handleGalleryUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       const files = Array.from(e.target.files) as File[];
-      const newImages: string[] = [];
-      for (const file of files) {
-        try {
-          const base64 = await readFileAsDataURL(file);
-          newImages.push(base64);
-        } catch (err) {
-          console.error("Error reading file", err);
+      setIsUploading(true);
+      const newUrls: string[] = [];
+      
+      try {
+        for (const file of files) {
+          const path = `gallery/${Date.now()}_${file.name}`;
+          const url = await uploadFile(file, path);
+          newUrls.push(url);
         }
+        
+        setFormData({ 
+          ...formData, 
+          gallery: [...(formData.gallery || []), ...newUrls] 
+        });
+        toast.success(`${newUrls.length} gallery images uploaded!`);
+      } catch (err) {
+        toast.error("Error uploading gallery images");
+      } finally {
+        setIsUploading(false);
       }
-      setFormData({ 
-        ...formData, 
-        gallery: [...(formData.gallery || []), ...newImages] 
-      });
     }
   };
 
@@ -162,7 +193,9 @@ export const AdminPanel = ({ projects, onAdd, onUpdate, onDelete, onExit }: Admi
   };
 
   return (
-    <div className="h-screen w-full bg-slate-50 flex overflow-hidden font-sans">
+    <>
+      <CustomCursor />
+      <div className="h-screen w-full bg-slate-50 flex overflow-hidden font-sans">
       
       {/* Sidebar - Collapsible */}
       <aside className={`
@@ -232,6 +265,8 @@ export const AdminPanel = ({ projects, onAdd, onUpdate, onDelete, onExit }: Admi
         {!isSidebarOpen && (
           <button 
             onClick={() => setIsSidebarOpen(true)}
+            aria-label="Open Sidebar"
+            title="Open Sidebar"
             className="md:hidden absolute bottom-6 left-6 z-50 p-3 bg-slate-900 text-white rounded-full shadow-lg hover:scale-110 transition-transform"
           >
             <Menu size={20} />
@@ -286,6 +321,8 @@ export const AdminPanel = ({ projects, onAdd, onUpdate, onDelete, onExit }: Admi
                   <select 
                     value={formData.status}
                     onChange={(e) => setFormData({...formData, status: e.target.value as 'published' | 'draft'})}
+                    aria-label="Project Status"
+                    title="Project Status"
                     className={`appearance-none pl-8 pr-8 py-2 rounded-md text-sm font-medium border outline-none focus:ring-2 focus:ring-slate-200 cursor-pointer transition-colors ${
                        formData.status === 'published' 
                        ? 'bg-green-50 border-green-200 text-green-700' 
@@ -296,7 +333,7 @@ export const AdminPanel = ({ projects, onAdd, onUpdate, onDelete, onExit }: Admi
                     <option value="published">Published</option>
                   </select>
                   <div className={`absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none ${formData.status === 'published' ? 'text-green-600' : 'text-amber-600'}`}>
-                     {formData.status === 'published' ? <CheckCircle size={14} /> : <CircleDashed size={14} />}
+                     {formData.status === 'published' ? <Rocket size={14} /> : <CircleDashed size={14} />}
                   </div>
                </div>
 
@@ -347,7 +384,7 @@ export const AdminPanel = ({ projects, onAdd, onUpdate, onDelete, onExit }: Admi
                           value={formData.category} 
                           onChange={e => setFormData({...formData, category: e.target.value})}
                           placeholder="e.g. Web App"
-                          className="w-full p-3 bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-100 outline-none text-sm transition-shadow shadow-sm"
+                          className="w-full p-3 bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-100 outline-none text-sm text-slate-800 transition-shadow shadow-sm"
                         />
                       </div>
                       <div>
@@ -357,7 +394,7 @@ export const AdminPanel = ({ projects, onAdd, onUpdate, onDelete, onExit }: Admi
                           value={formData.duration} 
                           onChange={e => setFormData({...formData, duration: e.target.value})}
                           placeholder="e.g. 2 Weeks"
-                          className="w-full p-3 bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-100 outline-none text-sm transition-shadow shadow-sm"
+                          className="w-full p-3 bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-100 outline-none text-sm text-slate-800 transition-shadow shadow-sm"
                         />
                       </div>
                     </div>
@@ -371,7 +408,7 @@ export const AdminPanel = ({ projects, onAdd, onUpdate, onDelete, onExit }: Admi
                       value={formData.description} 
                       onChange={e => setFormData({...formData, description: e.target.value})}
                       placeholder="Brief summary shown on the project card..."
-                      className="w-full p-3 bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-100 outline-none text-sm leading-relaxed transition-shadow shadow-sm resize-none"
+                      className="w-full p-3 bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-100 outline-none text-sm text-slate-800 leading-relaxed transition-shadow shadow-sm resize-none"
                     />
                   </div>
 
@@ -391,7 +428,7 @@ export const AdminPanel = ({ projects, onAdd, onUpdate, onDelete, onExit }: Admi
                      </div>
                      
                      <div className="space-y-4">
-                        {(formData.details || []).map((section, idx) => (
+                        {(formData.details || []).map((section: { title: string; content: string }, idx: number) => (
                            <div key={idx} className="bg-slate-50 p-4 rounded-lg border border-slate-100 relative group hover:border-blue-200 transition-colors">
                               <button 
                                 onClick={() => removeDetailSection(idx)}
@@ -406,14 +443,14 @@ export const AdminPanel = ({ projects, onAdd, onUpdate, onDelete, onExit }: Admi
                                   value={section.title}
                                   onChange={(e) => updateDetailSection(idx, 'title', e.target.value)}
                                   placeholder="Section Title (e.g. The Challenge)"
-                                  className="w-full bg-transparent border-b border-slate-200 focus:border-blue-400 outline-none text-sm font-bold text-slate-800 pb-1"
+                                  className="w-full bg-transparent border-b border-slate-200 focus:border-blue-400 outline-none text-sm font-bold text-slate-900 pb-1"
                                 />
                                 <textarea 
                                   rows={3}
                                   value={section.content}
                                   onChange={(e) => updateDetailSection(idx, 'content', e.target.value)}
                                   placeholder="Write your story content here..."
-                                  className="w-full bg-white p-2 border border-slate-200 rounded focus:ring-1 focus:ring-blue-100 outline-none text-sm text-slate-600 resize-none"
+                                  className="w-full bg-white p-2 border border-slate-200 rounded focus:ring-1 focus:ring-blue-100 outline-none text-sm text-slate-800 resize-none"
                                 />
                               </div>
                            </div>
@@ -436,17 +473,38 @@ export const AdminPanel = ({ projects, onAdd, onUpdate, onDelete, onExit }: Admi
                           value={formData.speciality} 
                           onChange={e => setFormData({...formData, speciality: e.target.value})}
                           placeholder="e.g. Real-time Synchronization"
-                          className="w-full p-3 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-100 outline-none text-sm"
+                          className="w-full p-3 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-100 outline-none text-sm text-slate-800"
                         />
                     </div>
                     <div>
                        <label className="block text-xs font-bold uppercase text-slate-400 mb-1">Tech Stack (Comma Separated)</label>
+                       <p className="text-[11px] text-slate-500 mb-2">Separate technologies with commas. Spaces within names are preserved (e.g., "Tailwind CSS", "React Native")</p>
                        <input 
                           type="text" 
                           value={formData.stack.join(', ')} 
                           onChange={e => handleArrayInput('stack', e.target.value)}
-                          placeholder="React, TypeScript, Tailwind"
-                          className="w-full p-3 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-100 outline-none text-sm font-mono text-slate-600"
+                          placeholder="React, TypeScript, Tailwind CSS, Node.js"
+                          className="w-full p-3 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-100 outline-none text-sm font-mono text-slate-800"
+                        />
+                    </div>
+                    <div>
+                       <label className="block text-xs font-bold uppercase text-slate-400 mb-1">Website URL</label>
+                       <input 
+                          type="url" 
+                          value={formData.websiteUrl || ''} 
+                          onChange={e => setFormData({...formData, websiteUrl: e.target.value})}
+                          placeholder="https://example.com"
+                          className="w-full p-3 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-100 outline-none text-sm font-mono text-slate-800"
+                        />
+                    </div>
+                    <div>
+                       <label className="block text-xs font-bold uppercase text-slate-400 mb-1">Source Code URL</label>
+                       <input 
+                          type="url" 
+                          value={formData.sourceCodeUrl || ''} 
+                          onChange={e => setFormData({...formData, sourceCodeUrl: e.target.value})}
+                          placeholder="https://github.com/username/repo"
+                          className="w-full p-3 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-100 outline-none text-sm font-mono text-slate-800"
                         />
                     </div>
                   </div>
@@ -476,21 +534,24 @@ export const AdminPanel = ({ projects, onAdd, onUpdate, onDelete, onExit }: Admi
                      {/* Main Image Upload */}
                      <div>
                         <label className="block text-xs font-bold uppercase text-slate-400 mb-2">Main Image</label>
-                        <div className="border-2 border-dashed border-slate-200 rounded-lg p-6 text-center hover:bg-slate-50 transition-colors cursor-pointer relative group">
+                        <div className={`border-2 border-dashed border-slate-200 rounded-lg p-6 text-center hover:bg-slate-50 transition-colors cursor-pointer relative group ${isUploading ? 'pointer-events-none opacity-50' : ''}`}>
                           <input 
                             type="file" 
                             accept="image/*"
+                            title="Upload Main Image"
+                            aria-label="Upload Main Image"
                             className="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-10" 
                             onChange={handleMainImageUpload}
+                            disabled={isUploading}
                           />
                           <div className="flex flex-col items-center gap-2 text-slate-400 group-hover:text-blue-500 transition-colors">
-                            <Upload size={24} />
-                            <span className="text-xs font-bold uppercase">Upload from Device</span>
+                            {isUploading ? <Loader2 size={24} className="animate-spin" /> : <Upload size={24} />}
+                            <span className="text-xs font-bold uppercase">{isUploading ? 'Uploading...' : 'Upload from Device'}</span>
                           </div>
                         </div>
                         {formData.image && (
                           <div className="mt-4 relative group rounded-lg overflow-hidden border border-slate-200 h-48 bg-slate-100">
-                             <img src={formData.image} alt="Preview" className="w-full h-full object-cover" />
+                             <img src={formData.image} alt="Preview" className="w-full h-full object-cover" loading="lazy" decoding="async" />
                              <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity" />
                           </div>
                         )}
@@ -499,28 +560,33 @@ export const AdminPanel = ({ projects, onAdd, onUpdate, onDelete, onExit }: Admi
                      {/* Gallery Upload */}
                      <div>
                         <label className="block text-xs font-bold uppercase text-slate-400 mb-2">Gallery Images</label>
-                        <div className="border-2 border-dashed border-slate-200 rounded-lg p-6 text-center hover:bg-slate-50 transition-colors cursor-pointer relative group">
+                        <div className={`border-2 border-dashed border-slate-200 rounded-lg p-6 text-center hover:bg-slate-50 transition-colors cursor-pointer relative group ${isUploading ? 'pointer-events-none opacity-50' : ''}`}>
                           <input 
                             type="file" 
                             accept="image/*"
                             multiple
+                            title="Upload Gallery Images"
+                            aria-label="Upload Gallery Images"
                             className="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-10" 
                             onChange={handleGalleryUpload}
+                            disabled={isUploading}
                           />
                           <div className="flex flex-col items-center gap-2 text-slate-400 group-hover:text-blue-500 transition-colors">
-                            <ImageIcon size={24} />
-                            <span className="text-xs font-bold uppercase">Upload Multiple</span>
+                            {isUploading ? <Loader2 size={24} className="animate-spin" /> : <ImageIcon size={24} />}
+                            <span className="text-xs font-bold uppercase">{isUploading ? 'Uploading...' : 'Upload Multiple'}</span>
                           </div>
                         </div>
                         
                         {/* Gallery Preview Grid */}
                         {formData.gallery && formData.gallery.length > 0 && (
                           <div className="grid grid-cols-3 gap-2 mt-4">
-                             {formData.gallery.map((img, idx) => (
+                             {formData.gallery.map((img: string, idx: number) => (
                                <div key={idx} className="aspect-square relative group rounded-md overflow-hidden border border-slate-200 bg-slate-100">
-                                 <img src={img} alt={`Gallery ${idx}`} className="w-full h-full object-cover" />
+                                 <img src={img} alt={`Gallery ${idx}`} className="w-full h-full object-cover" loading="lazy" decoding="async" />
                                  <button 
                                    onClick={() => removeGalleryImage(idx)}
+                                   title="Remove Gallery Image"
+                                   aria-label="Remove Gallery Image"
                                    className="absolute top-1 right-1 bg-red-500 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600 shadow-sm"
                                  >
                                    <X size={12} />
@@ -532,13 +598,60 @@ export const AdminPanel = ({ projects, onAdd, onUpdate, onDelete, onExit }: Admi
                      </div>
                   </div>
 
+                  {/* Typography */}
+                  <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-6">
+                     <h3 className="text-sm font-bold text-slate-800 border-b border-slate-100 pb-3">Typography (Google Fonts)</h3>
+                     
+                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                           <label className="block text-xs font-bold uppercase text-slate-400 mb-2">Title Font</label>
+                           <select 
+                             value={formData.titleFont || 'Playfair Display'}
+                             onChange={(e) => setFormData({ ...formData, titleFont: e.target.value })}
+                             className="w-full p-3 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-100 outline-none text-sm text-slate-800"
+                           >
+                             {FONT_OPTIONS.map(font => (
+                               <option key={font.value} value={font.value} className="text-slate-800">{font.label}</option>
+                             ))}
+                           </select>
+                        </div>
+
+                        <div>
+                           <label className="block text-xs font-bold uppercase text-slate-400 mb-2">Section Headings Font</label>
+                           <select 
+                             value={formData.sectionTitleFont || 'Playfair Display'}
+                             onChange={(e) => setFormData({ ...formData, sectionTitleFont: e.target.value })}
+                             className="w-full p-3 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-100 outline-none text-sm text-slate-800"
+                           >
+                             {FONT_OPTIONS.map(font => (
+                               <option key={font.value} value={font.value} className="text-slate-800">{font.label}</option>
+                             ))}
+                           </select>
+                        </div>
+
+                        <div className="md:col-span-2">
+                           <label className="block text-xs font-bold uppercase text-slate-400 mb-2">Description / Body Font</label>
+                           <select 
+                             value={formData.descriptionFont || 'Inter'}
+                             onChange={(e) => setFormData({ ...formData, descriptionFont: e.target.value })}
+                             className="w-full p-3 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-100 outline-none text-sm text-slate-800"
+                           >
+                             {FONT_OPTIONS.map(font => (
+                               <option key={font.value} value={font.value} className="text-slate-800">{font.label}</option>
+                             ))}
+                           </select>
+                           <p className="mt-2 text-[10px] text-slate-400 italic">Preview your changes using the "Preview Page" button at the top.</p>
+                        </div>
+                     </div>
+                  </div>
+
                 </div>
             </div>
           )}
 
           {viewMode === 'preview-card' && (
              <div className="w-full min-h-full flex items-center justify-center p-8 bg-stone-200">
-                <div className="w-full max-w-lg aspect-[4/5] md:aspect-square bg-white shadow-2xl rounded-sm overflow-hidden border border-slate-300">
+                <div className="w-full max-w-lg aspect-square bg-white shadow-2xl rounded-sm overflow-hidden border border-slate-300">
                    <ProjectCard project={formData} isPreview={true} />
                 </div>
              </div>
@@ -552,6 +665,10 @@ export const AdminPanel = ({ projects, onAdd, onUpdate, onDelete, onExit }: Admi
         </div>
 
       </main>
-    </div>
+      </div>
+
+      {/* Toast Notifications */}
+      <Toast messages={toast.messages} onRemove={toast.removeToast} />
+    </>
   );
 };

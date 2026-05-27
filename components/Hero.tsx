@@ -26,14 +26,14 @@ export const Hero = () => {
 
   return (
     <section 
-      className="min-h-screen w-full relative flex flex-col items-center justify-center overflow-hidden bg-[#fafafa] dark:bg-[#050505] transition-colors duration-700 perspective-1000"
+      className="min-h-screen w-full relative flex flex-col items-center justify-center overflow-visible bg-[#fafafa] dark:bg-[#050505] transition-colors duration-700 perspective-1000"
       style={{ perspective: '1200px' }}
     >
       
       {/* --- BACKGROUND FX LAYERS --- */}
       
       {/* Light Mode: Aurora / Watercolour Effect */}
-      <div className="absolute inset-0 opacity-100 dark:opacity-0 transition-opacity duration-1000 pointer-events-none overflow-hidden">
+      <div className="absolute inset-0 opacity-100 dark:opacity-0 transition-opacity duration-1000 pointer-events-none overflow-hidden theme-transition-fix">
          <div className="absolute top-[-10%] left-[-10%] w-[60%] h-[60%] bg-blue-200/40 rounded-full blur-[120px] animate-float-slow mix-blend-multiply"></div>
          <div className="absolute bottom-[-10%] right-[-10%] w-[60%] h-[60%] bg-purple-200/40 rounded-full blur-[120px] animate-float-medium mix-blend-multiply delay-700"></div>
          <div className="absolute top-[40%] left-[30%] w-[40%] h-[40%] bg-teal-200/40 rounded-full blur-[100px] animate-float-fast mix-blend-multiply delay-1500"></div>
@@ -89,85 +89,74 @@ export const Hero = () => {
             />
         </div>
 
-        {/* Central 3D Gyroscope / Tesseract */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 transform-style-3d animate-spin-slow">
+        {/* Central Rotating Rings around Title */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[350px] md:w-[800px] h-[350px] md:h-[800px] pointer-events-none opacity-25 dark:opacity-50 select-none z-0">
+           {/* Ring 1 - Outer Slow */}
+           <div className="absolute inset-0 border-[1.5px] border-slate-400 dark:border-slate-500 rounded-full hero-spin-reverse opacity-30">
+              <div className="absolute top-1/2 -right-1 w-2 h-2 bg-slate-800 dark:bg-white rounded-full shadow-[0_0_10px_rgba(255,255,255,0.5)]"></div>
+           </div>
            
-           {/* Ring 1 (Vertical) */}
-           <div className="absolute inset-0 border border-slate-300/40 dark:border-slate-700/40 rounded-full transform rotate-y-45 animate-spin-reverse-slow" style={{ animationDuration: '20s' }}>
-              <div className="absolute top-0 left-1/2 w-2 h-2 bg-slate-400 dark:bg-slate-600 rounded-full -translate-x-1/2 -translate-y-1/2 shadow-[0_0_10px_currentColor]"></div>
-              <div className="absolute bottom-0 left-1/2 w-2 h-2 bg-slate-400 dark:bg-slate-600 rounded-full -translate-x-1/2 translate-y-1/2 shadow-[0_0_10px_currentColor]"></div>
+           {/* Ring 2 - Middle Medium */}
+           <div className="absolute inset-[10%] border-[1.5px] border-dashed border-slate-400 dark:border-slate-600 rounded-full hero-spin opacity-50">
            </div>
 
-           {/* Ring 2 (Horizontal) */}
-           <div className="absolute inset-[10%] border border-slate-300/40 dark:border-slate-700/40 rounded-full transform rotate-x-60 animate-spin-slow" style={{ animationDuration: '15s' }}>
-               <div className="absolute left-0 top-1/2 w-2 h-2 bg-blue-400/50 rounded-full -translate-x-1/2 -translate-y-1/2"></div>
-               <div className="absolute right-0 top-1/2 w-2 h-2 bg-blue-400/50 rounded-full translate-x-1/2 -translate-y-1/2"></div>
+           {/* Ring 3 - Inner Fast with Dot */}
+           <div className="absolute inset-[25%] border-[1.5px] border-slate-400 dark:border-slate-500 rounded-full hero-spin">
+              <div className="absolute -top-1 left-1/2 w-3 h-3 bg-pastel-1 dark:bg-black border-2 border-slate-800 dark:border-white rounded-full z-10 shadow-[0_0_15px_rgba(255,255,255,0.8)]"></div>
            </div>
-
-           {/* Inner Cube Frame */}
-           <div className="absolute inset-[25%] transform-style-3d animate-spin-slow" style={{ animationDuration: '30s' }}>
-              <div className="absolute inset-0 border border-slate-400/30 dark:border-blue-500/30 transform translate-z-12 transition-colors duration-500"></div>
-              <div className="absolute inset-0 border border-slate-400/30 dark:border-blue-500/30 transform -translate-z-12 transition-colors duration-500"></div>
-              <div className="absolute inset-0 border border-slate-400/30 dark:border-blue-500/30 transform rotate-y-90 translate-z-12 transition-colors duration-500"></div>
-              <div className="absolute inset-0 border border-slate-400/30 dark:border-blue-500/30 transform rotate-y-90 -translate-z-12 transition-colors duration-500"></div>
-              <div className="absolute inset-0 border border-slate-400/30 dark:border-blue-500/30 transform rotate-x-90 translate-z-12 transition-colors duration-500"></div>
-              <div className="absolute inset-0 border border-slate-400/30 dark:border-blue-500/30 transform rotate-x-90 -translate-z-12 transition-colors duration-500"></div>
-              
-              {/* Core Light */}
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-4 h-4 bg-slate-900 dark:bg-white rounded-full shadow-[0_0_40px_rgba(59,130,246,0.6)] animate-pulse"></div>
-           </div>
-
         </div>
 
       </div>
 
       {/* --- CONTENT LAYER (Glass Card Effect) --- */}
-      <div className="relative z-10 flex flex-col items-center px-6 max-w-5xl mx-auto">
+      <div className="relative z-40 flex flex-col items-center px-4 md:px-6 max-w-none w-full mx-auto text-center md:text-left overflow-visible">
         
         {/* Title Group with Badge Aligned Start */}
-        <div className="flex flex-col items-start mb-8 md:mb-10">
+        <div className="flex flex-col items-center justify-center w-full relative mb-1 md:mb-2">
             {/* Availability Badge */}
-            <div className="mb-2 ml-1 md:ml-2 inline-flex items-center gap-2 px-4 py-2 rounded-full border border-slate-200/60 dark:border-neutral-800/60 bg-white/30 dark:bg-black/30 backdrop-blur-md shadow-sm animate-fade-in-down hover:scale-105 transition-transform duration-300">
-              <span className="relative flex h-2.5 w-2.5">
+            <div className="mb-4 md:mb-6 inline-flex items-center gap-2 px-3 md:px-4 py-1.5 md:py-2 rounded-full border border-pastel-4/60 dark:border-neutral-800/60 bg-pastel-1/30 dark:bg-black/30 backdrop-blur-md shadow-sm animate-fade-in-down hover:scale-105 transition-transform duration-300 z-20">
+              <span className="relative flex h-2 w-2 md:h-2.5 md:w-2.5">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+                <span className="relative inline-flex rounded-full h-2 md:h-2.5 w-2 md:w-2.5 bg-emerald-500"></span>
               </span>
-              <span className="text-xs font-mono font-semibold tracking-wider text-slate-700 dark:text-neutral-300 uppercase">
+              <span className="text-[10px] md:text-xs font-mono font-semibold tracking-wider text-slate-700 dark:text-neutral-300 uppercase">
                 System Online
               </span>
             </div>
 
-            {/* Titles */}
-            <div className="relative">
-              <h1 className="text-5xl md:text-7xl lg:text-8xl font-serif text-slate-900 dark:text-white tracking-tighter leading-none relative z-10 drop-shadow-lg dark:drop-shadow-none flex flex-wrap gap-3 md:gap-4">
-                <span className="animate-fade-in-up mix-blend-overlay dark:mix-blend-normal opacity-90" style={{ animationDelay: '0.1s' }}>
+            {/* Titles - Centered in Rings */}
+            <div className="relative isolate text-center z-30 p-0">
+              <h1
+                className="relative z-50 overflow-visible text-slate-900 dark:text-white tracking-[0.02em] leading-[1.8] md:leading-[1.6] pb-2 md:pb-2 drop-shadow-lg dark:drop-shadow-none flex items-baseline justify-center gap-4 md:gap-6 whitespace-nowrap flex-nowrap"
+                style={{ fontFamily: 'Humblle Rought Caps, Playfair Display, serif', fontSize: 'clamp(2.5rem, 7.5vw, 6.5rem)' }}
+              >
+                <span className="animate-fade-in-up opacity-95" style={{ animationDelay: '0.1s' }}>
                   {DEVELOPER_INFO.name.split(' ')[0]}
                 </span>
                 <span className="text-transparent bg-clip-text bg-gradient-to-br from-slate-500 to-slate-800 dark:from-neutral-200 dark:to-neutral-600 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
                   {DEVELOPER_INFO.name.split(' ')[1]}
                 </span>
               </h1>
-              
               {/* Decorative Text Behind (Parallax Depth) */}
-              <span className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-[9rem] md:text-[15rem] tracking-tighter font-bold text-slate-900/5 dark:text-white/5 -z-10 whitespace-nowrap pointer-events-none blur-sm select-none">
+              <span className="hidden lg:inline-block absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-2xl md:text-5xl lg:text-[13rem] tracking-tighter font-bold text-slate-900/5 dark:text-white/8 z-0 whitespace-nowrap pointer-events-none blur-sm select-none px-4 md:px-24">
                 DEVELOPER
               </span>
             </div>
         </div>
 
         {/* Subtitle / Bio */}
-        <div className="max-w-4xl mx-auto animate-fade-in-up mb-8 md:mb-10 text-center" style={{ animationDelay: '0.3s' }}>
-          <p className="text-lg md:text-xl text-slate-600 dark:text-neutral-400 font-light leading-relaxed backdrop-blur-sm p-4 rounded-2xl border border-transparent hover:border-slate-200/50 dark:hover:border-white/5 transition-all whitespace-nowrap overflow-x-auto no-scrollbar">
-            {DEVELOPER_INFO.role} <span className="mx-2 text-slate-300 dark:text-neutral-700">|</span> {DEVELOPER_INFO.tagline}
+        <div className="max-w-4xl mx-auto animate-fade-in-up mb-6 md:mb-5 text-center" style={{ animationDelay: '0.3s' }}>
+          <p className="text-base md:text-xl text-slate-600 dark:text-neutral-400 font-light leading-relaxed p-2 md:p-4 rounded-2xl border border-transparent hover:border-slate-200/50 dark:hover:border-white/5 transition-all w-full overflow-x-hidden">
+            {DEVELOPER_INFO.role} <span className="mx-1 md:mx-2 text-slate-300 dark:text-neutral-700">|</span> {DEVELOPER_INFO.tagline}
           </p>
         </div>
 
         {/* Tech Badges */}
         <div className="flex flex-wrap justify-center gap-3 animate-fade-in-up" style={{ animationDelay: '0.4s' }}>
-             {["React", "WebGL", "Node.js", "AI"].map((tech, i) => (
+             {["React", "Firebase", "Node.js", "Gen AI"].map((tech, i) => (
                <span 
                  key={tech} 
-                 className="px-4 py-1.5 text-xs font-bold uppercase tracking-widest text-slate-500 dark:text-neutral-400 border border-slate-200 dark:border-neutral-800 rounded-full bg-white/40 dark:bg-neutral-900/40 backdrop-blur-sm hover:bg-white dark:hover:bg-neutral-800 hover:scale-110 transition-all cursor-default shadow-sm"
+                 className="px-4 py-1.5 text-xs font-bold uppercase tracking-widest text-slate-500 dark:text-neutral-400 border border-pastel-4 dark:border-neutral-800 rounded-full bg-pastel-1/40 dark:bg-neutral-900/40 backdrop-blur-sm hover:bg-pastel-1 dark:hover:bg-neutral-800 hover:scale-110 transition-all cursor-default shadow-sm"
                  style={{ transitionDelay: `${i * 50}ms` }}
                >
                  {tech}
@@ -178,7 +167,17 @@ export const Hero = () => {
       </div>
 
       {/* Scroll Indicator */}
-      <div className="absolute bottom-10 animate-bounce z-20 cursor-pointer opacity-60 hover:opacity-100 transition-opacity">
+      <div 
+        onClick={() => {
+          const nextSection = document.getElementById('projects');
+          if (nextSection) {
+            nextSection.scrollIntoView({ behavior: 'smooth' });
+          } else {
+            window.scrollTo({ top: window.innerHeight, behavior: 'smooth' });
+          }
+        }}
+        className="absolute bottom-10 animate-bounce z-20 cursor-pointer opacity-60 hover:opacity-100 transition-opacity"
+      >
         <div className="flex flex-col items-center gap-2">
            <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-neutral-600">Scroll</span>
            <ArrowDown className="w-5 h-5 text-slate-800 dark:text-white" />

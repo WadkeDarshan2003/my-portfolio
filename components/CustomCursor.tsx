@@ -1,131 +1,101 @@
 
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
 export const CustomCursor = () => {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const cursorRef = useRef<HTMLDivElement>(null); // Outer wrapper for positioning
-  const cursorDotRef = useRef<HTMLDivElement>(null); // Inner dot for styling/scaling
-  const particlesRef = useRef<any[]>([]);
-  const requestRef = useRef<number>(0);
+  const ringRef = useRef<HTMLDivElement>(null);
+  const animationRef = useRef<number>(0);
+  const mouseRef = useRef({ x: 0, y: 0 });
+  const ringPosRef = useRef({ x: 0, y: 0 });
+
+  const [isVisible, setIsVisible] = useState(false);
+  const [isTouch, setIsTouch] = useState(false);
+  const [isHoveringClickable, setIsHoveringClickable] = useState(false);
 
   useEffect(() => {
-    const canvas = canvasRef.current;
-    const cursor = cursorRef.current;
-    if (!canvas || !cursor) return;
+    const isFinePointer = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+    if (!isFinePointer) {
+      setIsTouch(true);
+      return;
+    }
 
-    const ctx = canvas.getContext('2d', { alpha: true });
-    if (!ctx) return;
+    const handleMouseMove = (event: MouseEvent) => {
+      const nextX = event.clientX;
+      const nextY = event.clientY;
 
-    let width = window.innerWidth;
-    let height = window.innerHeight;
+      if (!isVisible) {
+        setIsVisible(true);
+        ringPosRef.current.x = nextX;
+        ringPosRef.current.y = nextY;
+      }
 
-    const handleResize = () => {
-      width = window.innerWidth;
-      height = window.innerHeight;
-      canvas.width = width;
-      canvas.height = height;
+      mouseRef.current.x = nextX;
+      mouseRef.current.y = nextY;
     };
 
-    const handleMouseMove = (e: MouseEvent) => {
-      // Move the main cursor wrapper instantly
-      cursor.style.transform = `translate3d(${e.clientX}px, ${e.clientY}px, 0)`;
-      
-      // Spawn particles - kept subtle
-      particlesRef.current.push({
-        x: e.clientX,
-        y: e.clientY,
-        vx: (Math.random() - 0.5) * 0.5,
-        vy: (Math.random() - 0.5) * 0.5,
-        life: 1, 
-        size: Math.random() * 4 + 2,
-        color: `255, 255, 255`
-      });
+    const handleTouchStart = () => {
+      setIsTouch(true);
+      setIsVisible(false);
     };
 
-    const handleMouseOver = (e: MouseEvent) => {
-      const target = e.target as HTMLElement;
-      
-      // Check if target is clickable
-      // We check tag names and also traverse up to find 'a' or 'button' parents
-      const isClickable = 
-        target.tagName === 'A' || 
-        target.tagName === 'BUTTON' || 
-        target.closest('a') || 
-        target.closest('button') || 
-        target.tagName === 'INPUT' || 
-        target.tagName === 'TEXTAREA' || 
+    const handleMouseOver = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      const isClickable =
+        target.tagName === 'A' ||
+        target.tagName === 'BUTTON' ||
+        target.tagName === 'INPUT' ||
+        target.tagName === 'TEXTAREA' ||
         target.tagName === 'SELECT' ||
+        target.closest('a') !== null ||
+        target.closest('button') !== null ||
         target.getAttribute('role') === 'button' ||
         window.getComputedStyle(target).cursor === 'pointer';
 
-      if (isClickable) {
-        cursorDotRef.current?.classList.add('scale-[3]', 'opacity-40');
-      } else {
-        cursorDotRef.current?.classList.remove('scale-[3]', 'opacity-40');
-      }
+      setIsHoveringClickable(isClickable);
     };
-
-    window.addEventListener('resize', handleResize);
-    window.addEventListener('mousemove', handleMouseMove);
-    document.addEventListener('mouseover', handleMouseOver); // Event delegation
-    
-    handleResize();
 
     const animate = () => {
-      ctx.clearRect(0, 0, width, height);
-      
-      ctx.filter = 'blur(0.5px)'; 
-      ctx.globalCompositeOperation = 'screen'; 
+      const targetX = mouseRef.current.x;
+      const targetY = mouseRef.current.y;
 
-      for (let i = particlesRef.current.length - 1; i >= 0; i--) {
-        const p = particlesRef.current[i];
-        
-        p.life -= 0.03;
-        p.x += p.vx;
-        p.y += p.vy;
-        p.size *= 0.95;
+      ringPosRef.current.x += (targetX - ringPosRef.current.x) * 0.22;
+      ringPosRef.current.y += (targetY - ringPosRef.current.y) * 0.22;
 
-        if (p.life <= 0 || p.size <= 0.2) {
-          particlesRef.current.splice(i, 1);
-        } else {
-          ctx.fillStyle = `rgba(${p.color}, ${p.life * 0.5})`; 
-          ctx.beginPath();
-          ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-          ctx.fill();
-        }
+      if (ringRef.current) {
+        ringRef.current.style.transform = `translate3d(${ringPosRef.current.x}px, ${ringPosRef.current.y}px, 0)`;
       }
 
-      ctx.filter = 'none';
-      requestRef.current = requestAnimationFrame(animate);
+      animationRef.current = requestAnimationFrame(animate);
     };
 
-    requestRef.current = requestAnimationFrame(animate);
+    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('touchstart', handleTouchStart, { passive: true });
+    document.addEventListener('mouseover', handleMouseOver);
+
+    animationRef.current = requestAnimationFrame(animate);
 
     return () => {
-      window.removeEventListener('resize', handleResize);
       window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('touchstart', handleTouchStart);
       document.removeEventListener('mouseover', handleMouseOver);
-      if (requestRef.current) cancelAnimationFrame(requestRef.current);
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current);
+      }
     };
-  }, []);
+  }, [isVisible]);
+
+  if (isTouch) {
+    return null;
+  }
 
   return (
     <>
-      <canvas 
-        ref={canvasRef}
-        className="fixed inset-0 pointer-events-none z-[9998]"
-        style={{ opacity: 1 }}
-      />
-      {/* Wrapper controls position */}
-      <div 
-        ref={cursorRef}
-        className="fixed top-0 left-0 z-[9999] pointer-events-none -translate-x-1/2 -translate-y-1/2"
+      <div
+        ref={ringRef}
+        className={`fixed top-0 left-0 z-[100010] pointer-events-none -translate-x-1/2 -translate-y-1/2 transition-opacity duration-200 ${isVisible ? 'opacity-100' : 'opacity-0'}`}
       >
-         {/* Dot controls appearance and scaling */}
-         <div 
-           ref={cursorDotRef}
-           className="w-2.5 h-2.5 bg-slate-900 dark:bg-white rounded-full transition-transform duration-200 ease-out mix-blend-difference shadow-[0_0_2px_rgba(255,255,255,1)]"
-         />
+        <div
+          className={`w-7 h-7 rounded-full border-2 border-black dark:border-white bg-transparent transition-transform duration-150 ease-out ${isHoveringClickable ? 'scale-150' : 'scale-100'}`}
+        />
       </div>
     </>
   );
