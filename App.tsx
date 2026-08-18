@@ -1,30 +1,44 @@
 
-import React, { useState, useEffect } from "react";
+import React, { Suspense, lazy, useState, useEffect } from "react";
 import { Hero } from "./components/Hero";
-import { ProjectPair } from "./components/ProjectPair";
-import { ProjectDetail } from "./components/ProjectDetail";
+import { CircularProjectSlider } from "./components/CircularProjectSlider";
 import { AIChat } from "./components/AIChat";
 import { Footer } from "./components/Footer";
-import { AdminPanel } from "./components/AdminPanel";
-import { AdminLogin } from "./components/AdminLogin";
 import Navbar from "./components/Navbar";
 import { CustomCursor } from "./components/CustomCursor";
+import { AudioPlayer } from "./components/AudioPlayer";
 import { Process } from "./components/Process";
 import { Expertise } from "./components/Expertise";
-import { PROJECTS as INITIAL_PROJECTS, DEVELOPER_INFO } from "./data";
-import { Project } from "./types";
+import { Achievement } from "./components/Achievement";
+import { DEVELOPER_INFO } from "./data";
+import { Project, AchievementCardData } from "./types";
 import { Sun, Moon } from "lucide-react";
-import { getProjects, addProject, updateProject, deleteProject } from "./src/services/projectService";
-import { testFirebaseConnection } from "./src/services/firebaseTest";
-import { migrateProjectsToFirebase, getMigrationStatus } from "./src/services/migrationService";
+import { subscribeToProjects, addProject, updateProject, deleteProject } from "./src/services/projectService";
+import { subscribeToAchievements, addAchievement, updateAchievement, deleteAchievement } from "./src/services/achievementService";
 import { onUserAuthStateChanged } from "./src/services/authService";
 import { User } from "firebase/auth";
+
+const ProjectDetail = lazy(() =>
+  import("./components/ProjectDetail").then((module) => ({ default: module.ProjectDetail }))
+);
+const AdminPanel = lazy(() =>
+  import("./components/AdminPanel").then((module) => ({ default: module.AdminPanel }))
+);
+const AdminLogin = lazy(() =>
+  import("./components/AdminLogin").then((module) => ({ default: module.AdminLogin }))
+);
+
+const ViewFallback = () => (
+  <main className="w-full min-h-screen bg-stone-50 dark:bg-black flex items-center justify-center">
+    <div className="h-10 w-10 rounded-full border-2 border-slate-300 border-t-slate-900 dark:border-neutral-700 dark:border-t-white animate-spin" />
+  </main>
+);
 
 const App = () => {
   // State for Projects (ONLY from Firebase - no fallback)
   const [projects, setProjects] = useState<Project[]>([]);
+  const [achievements, setAchievements] = useState<AchievementCardData[]>([]);
   const [loading, setLoading] = useState(true);
-  const [migrating, setMigrating] = useState(false);
   const [firebaseStatus, setFirebaseStatus] = useState<{
     connected: boolean;
     error?: string;
@@ -49,64 +63,56 @@ const App = () => {
     return () => unsubscribe();
   }, []);
   
-  // Load projects from Firebase ONLY with auto-migration
+  // Load projects and achievements from Firebase only. Migration scripts are not
+  // run from the website to avoid creating duplicates on normal page loads.
+  // Load projects and achievements using real-time cache-first listeners
   useEffect(() => {
-    const loadFirebaseProjects = async () => {
-      try {
-        setLoading(true);
-        console.log('🔍 Testing Firebase connection...');
-        const connectionTest = await testFirebaseConnection();
-        
-        setFirebaseStatus({
-          connected: connectionTest.connected,
-          error: connectionTest.error,
-        });
-        
-        if (connectionTest.connected) {
-          console.log('✅ Firebase connected, loading projects...');
-          
-          // Try to load existing projects first
-          const firebaseProjects = await getProjects();
-          console.log(`📊 Found ${firebaseProjects.length} projects in Firebase`);
-          
-          // Only migrate if database is empty
-          if (firebaseProjects.length === 0) {
-            console.log('📦 Database empty, starting auto-migration...');
-            setMigrating(true);
-            
-            const migrationResult = await migrateProjectsToFirebase(INITIAL_PROJECTS);
-            
-            if (migrationResult.success) {
-              console.log(`✅ Migration complete! ${migrationResult.migrated} projects added`);
-              
-              // Reload projects after migration
-              const newProjects = await getProjects();
-              setProjects(newProjects);
-              console.log(`📦 Loaded ${newProjects.length} projects after migration`);
-            } else {
-              console.error(`❌ Migration failed:`, migrationResult.errors);
-            }
-            
-            setMigrating(false);
-          } else {
-            // Database has projects, use them
-            setProjects(firebaseProjects);
-          }
-        } else {
-          console.error('❌ Firebase connection failed:', connectionTest.error);
-        }
-      } catch (error) {
-        console.error('Failed to load Firebase projects:', error);
-        setFirebaseStatus({
-          connected: false,
-          error: error instanceof Error ? error.message : 'Unknown error',
-        });
-      } finally {
+    let projectsLoaded = false;
+    let achievementsLoaded = false;
+
+    const checkDone = () => {
+      if (projectsLoaded && achievementsLoaded) {
         setLoading(false);
+        setFirebaseStatus({ connected: true });
       }
     };
 
-    loadFirebaseProjects();
+    setLoading(true);
+
+    const unsubProjects = subscribeToProjects(
+      (data) => {
+        setProjects(data);
+        if (!projectsLoaded) {
+          projectsLoaded = true;
+          checkDone();
+        }
+      },
+      (error) => {
+        console.error('Failed to load projects:', error);
+        setFirebaseStatus({ connected: false, error: error.message });
+        setLoading(false);
+      }
+    );
+
+    const unsubAchievements = subscribeToAchievements(
+      (data) => {
+        setAchievements(data);
+        if (!achievementsLoaded) {
+          achievementsLoaded = true;
+          checkDone();
+        }
+      },
+      (error) => {
+        console.error('Failed to load achievements:', error);
+        setFirebaseStatus({ connected: false, error: error.message });
+        setLoading(false);
+      }
+    );
+
+    return () => {
+      unsubProjects();
+      unsubAchievements();
+    };
   }, []);
   
   // Navigation State
@@ -192,21 +198,66 @@ const App = () => {
     }
   };
 
+  // --- CRUD Operations for Achievements ---
+  const handleAddAchievement = async (newAchievement: AchievementCardData) => {
+    try {
+      const achievementId = await addAchievement(newAchievement);
+      if (achievementId) {
+        const achievementWithId = { ...newAchievement, id: achievementId };
+        setAchievements(prev => [achievementWithId, ...prev]);
+      } else {
+        throw new Error('Achievement was not created');
+      }
+    } catch (error) {
+      console.error('Error adding achievement:', error);
+    }
+  };
+
+  const handleUpdateAchievement = async (updatedAchievement: AchievementCardData) => {
+    try {
+      const achievementId = updatedAchievement.id.toString();
+      if (achievementId) {
+        const success = await updateAchievement(achievementId, updatedAchievement);
+        if (!success) {
+          throw new Error('Achievement was not updated');
+        }
+        setAchievements(prev => prev.map(a => a.id === updatedAchievement.id ? updatedAchievement : a));
+      }
+    } catch (error) {
+      console.error('Error updating achievement:', error);
+    }
+  };
+
+  const handleDeleteAchievement = async (id: number | string) => {
+    try {
+      const achievementId = id.toString();
+      if (achievementId) {
+        const success = await deleteAchievement(achievementId);
+        if (!success) {
+          throw new Error('Achievement was not deleted');
+        }
+        setAchievements(prev => prev.filter(a => a.id !== id));
+      }
+    } catch (error) {
+      console.error('Error deleting achievement:', error);
+    }
+  };
+
   // --- Render Logic ---
 
-  // Loading State
+  // Loading State - Restored full screen block to prevent CLS
   if (loading) {
     return (
       <>
         {/* Run theme switch immediately in loading state too */}
-        <main className="w-full relative min-h-screen bg-stone-50 dark:bg-black flex items-center justify-center transition-colors duration-300">
+        <main className="w-full relative min-h-screen bg-stone-50 dark:bg-black flex items-center justify-center transition-colors duration-700">
           <div className="text-center">
             <div className="inline-block animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-slate-900 dark:border-white mb-4"></div>
             <p className="text-slate-900 dark:text-white font-medium">
-              {migrating ? '📦 Migrating projects...' : 'Loading the tech'}
+              Loading the tech
             </p>
             <p className="text-slate-600 dark:text-neutral-400 text-sm mt-2">
-              {migrating ? 'First-time setup, please wait' : 'Preparing your experience'}
+              Preparing your experience
             </p>
           </div>
         </main>
@@ -217,7 +268,7 @@ const App = () => {
   // Firebase Connection Error
   if (!firebaseStatus.connected) {
     return (
-      <main className="w-full relative min-h-screen bg-stone-50 dark:bg-black flex items-center justify-center transition-colors duration-300 p-8">
+      <main className="w-full relative min-h-screen bg-stone-50 dark:bg-black flex items-center justify-center transition-colors duration-700 p-8">
         <div className="max-w-2xl text-center">
           <div className="text-6xl mb-4">⚠️</div>
           <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-4">Firebase Connection Failed</h1>
@@ -247,83 +298,50 @@ const App = () => {
   // 1. Admin Login View
   if (showAdminLogin) {
     return (
-      <AdminLogin 
-        onLoginSuccess={() => {
-          setShowAdminLogin(false);
-          setIsAdminMode(true);
-        }}
-      />
+      <Suspense fallback={<ViewFallback />}>
+        <AdminLogin 
+          onLoginSuccess={() => {
+            setShowAdminLogin(false);
+            setIsAdminMode(true);
+          }}
+        />
+      </Suspense>
     );
   }
 
   // 2. Admin CMS View (only accessible after login)
   if (isAdminMode && adminUser) {
     return (
-      <main className="w-full relative min-h-screen bg-white transition-colors duration-300">
+      <main className="w-full relative min-h-screen bg-white transition-colors duration-700">
         <CustomCursor />
-        <AdminPanel 
-          projects={projects}
-          onAdd={handleAddProject}
-          onUpdate={handleUpdateProject}
-          onDelete={handleDeleteProject}
-          onExit={() => setIsAdminMode(false)}
-        />
+        <Suspense fallback={<ViewFallback />}>
+          <AdminPanel 
+            projects={projects}
+            onAdd={handleAddProject}
+            onUpdate={handleUpdateProject}
+            onDelete={handleDeleteProject}
+            achievements={achievements}
+            onAddAchievement={handleAddAchievement}
+            onUpdateAchievement={handleUpdateAchievement}
+            onDeleteAchievement={handleDeleteAchievement}
+            onExit={() => setIsAdminMode(false)}
+          />
+        </Suspense>
       </main>
     );
   }
 
-  // 3. Project Detail View
-  if (selectedProject) {
-    return (
-      <main className="w-full relative bg-stone-50 dark:bg-black min-h-screen transition-colors duration-300">
-        <CustomCursor />
-        
-        {/* Top Right Actions - Fixed for consistency */}
-        <div className="fixed top-6 right-6 z-[60] flex items-center gap-3">
-           <a 
-              href={`mailto:${DEVELOPER_INFO.email}`}
-              className="hidden md:flex items-center gap-2 px-5 py-2.5 bg-slate-900 dark:bg-white text-white dark:text-black text-xs md:text-sm font-medium rounded-full shadow-lg hover:scale-105 transition-transform"
-            >
-              <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse shadow-[0_0_8px_rgba(34,197,94,0.5)]"></span> Hire Me
-            </a>
-            <button 
-              onClick={toggleTheme}
-              className="p-3 rounded-full bg-white/30 dark:bg-black/30 backdrop-blur-3xl border border-white/40 dark:border-neutral-800 shadow-lg text-slate-700 dark:text-neutral-200 hover:scale-110 transition-all"
-            >
-              {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
-            </button>
-        </div>
-
-        <ProjectDetail 
-          project={selectedProject} 
-          onBack={() => setSelectedProject(null)} 
-        />
-        <AIChat />
-      </main>
-    );
-  }
-
-  // 3. Main Portfolio View (Standard Scroll)
+  // 3. Main and Project Detail Views
   
   // Filter for published projects
   const publishedProjects = projects.filter(p => p.status === 'published');
 
-  // Group projects into pairs for the split layout
-  const projectPairs: { left: Project; right?: Project }[] = [];
-  for (let i = 0; i < publishedProjects.length; i += 2) {
-    projectPairs.push({
-      left: publishedProjects[i],
-      right: publishedProjects[i + 1] || undefined
-    });
-  }
-
   return (
-    <main className="w-full relative min-h-screen bg-stone-50 dark:bg-black transition-colors duration-300 overflow-x-hidden">
+    <>
       <CustomCursor />
+      <AIChat />
 
-      <Navbar projects={projects} />
-
-      {/* Top Right Actions - Fixed */}
+      {/* Top Right Actions - Shared fixed overlay */}
       <div className="fixed top-6 right-6 z-[60] flex items-center gap-3">
          <a 
             href={`mailto:${DEVELOPER_INFO.email}`}
@@ -331,46 +349,60 @@ const App = () => {
           >
             <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse shadow-[0_0_8px_rgba(34,197,94,0.5)]"></span> Hire Me
           </a>
+          <AudioPlayer />
           <button 
             onClick={toggleTheme}
-            className="p-3 rounded-full bg-white/30 dark:bg-black/30 backdrop-blur-3xl border border-white/40 dark:border-neutral-800 shadow-lg text-slate-700 dark:text-neutral-200 hover:scale-110 transition-all"
+            className="p-3 rounded-full bg-white/80 dark:bg-black/75 backdrop-blur-sm border border-white/40 dark:border-neutral-800 shadow-lg text-slate-700 dark:text-neutral-200 hover:scale-110 transition-all"
           >
             {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
           </button>
       </div>
 
-      <Hero />
-
-      <div className="relative flex flex-col bg-stone-50 dark:bg-black transition-colors duration-300 gap-10 md:gap-0 px-2 py-2 md:px-0 md:py-0 overflow-x-hidden">
-        {/* Project Section Background Decoration - Dark Mode Only */}
-        <div className="hidden dark:block absolute inset-0 pointer-events-none">
-           <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-blue-600/10 blur-[150px] rounded-full"></div>
-           <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-purple-600/10 blur-[150px] rounded-full"></div>
-        </div>
-
-        {projectPairs.map((pair, index) => (
-          <ProjectPair 
-            key={index} 
-            projectLeft={pair.left} 
-            projectRight={pair.right}
-            onProjectClick={setSelectedProject}
-          />
-        ))}
-        {publishedProjects.length === 0 && (
-          <div className="py-32 text-center text-slate-400 min-h-[50vh] flex items-center justify-center">
-            <p>No published projects to display yet.</p>
+      {selectedProject ? (
+        <main className="w-full relative bg-stone-50 dark:bg-black min-h-screen transition-colors duration-700">
+          <Suspense fallback={<ViewFallback />}>
+            <ProjectDetail 
+              project={selectedProject} 
+              onBack={() => setSelectedProject(null)} 
+            />
+          </Suspense>
+        </main>
+      ) : (
+        <main className="w-full relative min-h-screen bg-stone-50 dark:bg-black transition-colors duration-700">
+          <Navbar projects={projects} />
+          
+          {/* Parallax Hero Wrapper (Using fixed instead of sticky to prevent Safari/Chrome flashing bugs) */}
+          <div className="fixed top-0 left-0 h-screen w-full z-0 overflow-hidden transform-gpu pointer-events-none">
+            <div className="pointer-events-auto h-full w-full">
+              <Hero />
+            </div>
           </div>
-        )}
-      </div>
-
-      <Process />
-      
-      <Expertise />
-
-      <Footer onAdminClick={() => setShowAdminLogin(true)} />
-
-      <AIChat />
-    </main>
+          
+          {/* Main Content Wrapper (Slides over Hero) */}
+          <div className="relative z-20 isolate transform-gpu bg-stone-50 dark:bg-black transition-colors duration-700 mt-[100vh]">
+            {/* Opaque seam cover — prevents fixed hero from ever showing through at the join */}
+            <div className="absolute -top-1 left-0 w-full h-4 bg-stone-50 dark:bg-black transition-colors duration-700 z-10" />
+            <Achievement achievements={achievements.filter(a => a.status === 'published')} />
+            
+            <div id="projects">
+              {publishedProjects.length === 0 ? (
+                <div className="py-32 text-center text-slate-400 min-h-[50vh] flex items-center justify-center relative z-10">
+                  <p>No published projects to display yet.</p>
+                </div>
+              ) : (
+                <CircularProjectSlider 
+                  projects={publishedProjects} 
+                  onProjectClick={setSelectedProject} 
+                />
+              )}
+            </div>
+            <Process />
+            <Expertise />
+            <Footer onAdminClick={() => setShowAdminLogin(true)} />
+          </div>
+        </main>
+      )}
+    </>
   );
 };
 

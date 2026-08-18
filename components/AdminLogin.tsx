@@ -41,6 +41,15 @@ export const AdminLogin = ({ onLoginSuccess }: AdminLoginProps) => {
   return (
     <>
       <CustomCursor />
+      {loading && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-md transition-opacity">
+          <div className="bg-slate-900 p-8 rounded-2xl shadow-2xl flex flex-col items-center gap-2 border border-slate-700 text-center">
+            <Loader2 size={36} className="animate-spin text-white mb-2" />
+            <p className="font-semibold text-white tracking-wide">Verifying Credentials</p>
+            <p className="text-sm text-slate-400">Securing your admin session...</p>
+          </div>
+        </div>
+      )}
       <main className="w-full relative min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 dark:from-black dark:via-slate-900 dark:to-black flex items-center justify-center p-4 overflow-hidden">
         
         {/* Back Button */}

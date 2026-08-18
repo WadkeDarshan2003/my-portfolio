@@ -3,7 +3,6 @@ import React, { useEffect, useState } from 'react';
 import ReactDOM from 'react-dom';
 import { DEVELOPER_INFO } from '../data';
 import { Project } from '../types';
-import profileImage from '../Public/image.png';
 import { Toast, useToast } from './Toast';
 
 interface NavbarProps {
@@ -14,8 +13,7 @@ export const Navbar = ({ projects = [] }: NavbarProps) => {
   const navItems = [
     { label: 'Projects', id: 'projects' },
     { label: 'Path Way', id: 'process' },
-    { label: 'Expertise', id: 'expertise' },
-    { label: 'Testimonials', id: 'testimonials' }
+    { label: 'Expertise', id: 'expertise' }
   ];
   const [mounted, setMounted] = useState(false);
   const toast = useToast();
@@ -48,10 +46,10 @@ export const Navbar = ({ projects = [] }: NavbarProps) => {
       >
         <button 
           onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-          className="w-10 h-10 md:w-14 md:h-14 rounded-full border border-white/30 dark:border-white/20 shadow-lg bg-white/20 dark:bg-black/30 backdrop-blur-xl overflow-hidden hover:scale-105 transition-transform duration-300 cursor-pointer"
+          className="w-10 h-10 md:w-14 md:h-14 rounded-full border border-white/30 dark:border-white/20 shadow-lg bg-white/80 dark:bg-black/75 backdrop-blur-sm overflow-hidden hover:scale-105 transition-transform duration-300 cursor-pointer"
         >
           <img 
-            src={profileImage} 
+            src="/image.png" 
             alt={DEVELOPER_INFO.name}
             className="w-full h-full object-cover"
             decoding="async"
@@ -69,11 +67,11 @@ export const Navbar = ({ projects = [] }: NavbarProps) => {
         <div className="relative w-fit max-w-full px-1.5 md:px-2 py-1.5 md:py-2 flex items-center justify-center overflow-hidden rounded-full">
           {/* Glass Backdrop */}
           <div 
-            className="absolute inset-0 rounded-full border -z-10 backdrop-blur-2xl saturate-150 will-change-[backdrop-filter]
-              bg-white/50 border-white/30 shadow-xl
+            className="absolute inset-0 rounded-full border -z-10 backdrop-blur-sm saturate-125
+              bg-white/80 border-white/40 shadow-xl
               dark:bg-neutral-900/90 dark:border-white/15 dark:shadow-lg"
             style={{ 
-              WebkitBackdropFilter: 'blur(20px) saturate(150%)',
+              WebkitBackdropFilter: 'blur(6px) saturate(125%)',
             }}
           />
 

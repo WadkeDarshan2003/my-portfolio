@@ -3,24 +3,22 @@ import React, { useEffect, useRef, useState } from 'react';
 
 export const CustomCursor = () => {
   const ringRef = useRef<HTMLDivElement>(null);
+  const dotRef = useRef<HTMLDivElement>(null);
   const animationRef = useRef<number>(0);
   const mouseRef = useRef({ x: 0, y: 0 });
   const ringPosRef = useRef({ x: 0, y: 0 });
 
   const [isVisible, setIsVisible] = useState(false);
-  const [isTouch, setIsTouch] = useState(false);
+  const [isEnabled, setIsEnabled] = useState(false);
   const [isHoveringClickable, setIsHoveringClickable] = useState(false);
+  const hoveringRef = useRef(false);
 
   useEffect(() => {
-    const isFinePointer = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
-    if (!isFinePointer) {
-      setIsTouch(true);
-      return;
-    }
-
     const handleMouseMove = (event: MouseEvent) => {
       const nextX = event.clientX;
       const nextY = event.clientY;
+
+      setIsEnabled(true);
 
       if (!isVisible) {
         setIsVisible(true);
@@ -33,7 +31,7 @@ export const CustomCursor = () => {
     };
 
     const handleTouchStart = () => {
-      setIsTouch(true);
+      setIsEnabled(false);
       setIsVisible(false);
     };
 
@@ -50,7 +48,10 @@ export const CustomCursor = () => {
         target.getAttribute('role') === 'button' ||
         window.getComputedStyle(target).cursor === 'pointer';
 
-      setIsHoveringClickable(isClickable);
+      if (hoveringRef.current !== isClickable) {
+        hoveringRef.current = isClickable;
+        setIsHoveringClickable(isClickable);
+      }
     };
 
     const animate = () => {
@@ -61,7 +62,11 @@ export const CustomCursor = () => {
       ringPosRef.current.y += (targetY - ringPosRef.current.y) * 0.22;
 
       if (ringRef.current) {
-        ringRef.current.style.transform = `translate3d(${ringPosRef.current.x}px, ${ringPosRef.current.y}px, 0)`;
+        ringRef.current.style.transform = `translate3d(${ringPosRef.current.x - 14}px, ${ringPosRef.current.y - 14}px, 0)`;
+      }
+
+      if (dotRef.current) {
+        dotRef.current.style.transform = `translate3d(${targetX - 3}px, ${targetY - 3}px, 0)`;
       }
 
       animationRef.current = requestAnimationFrame(animate);
@@ -81,9 +86,9 @@ export const CustomCursor = () => {
         cancelAnimationFrame(animationRef.current);
       }
     };
-  }, [isVisible]);
+  }, []);
 
-  if (isTouch) {
+  if (!isEnabled) {
     return null;
   }
 
@@ -91,12 +96,20 @@ export const CustomCursor = () => {
     <>
       <div
         ref={ringRef}
-        className={`fixed top-0 left-0 z-[100010] pointer-events-none -translate-x-1/2 -translate-y-1/2 transition-opacity duration-200 ${isVisible ? 'opacity-100' : 'opacity-0'}`}
+        aria-hidden="true"
+        className={`fixed left-0 top-0 pointer-events-none transition-opacity duration-200 ${isVisible ? 'opacity-100' : 'opacity-0'}`}
+        style={{ zIndex: 2147483647, willChange: 'transform' }}
       >
         <div
-          className={`w-7 h-7 rounded-full border-2 border-black dark:border-white bg-transparent transition-transform duration-150 ease-out ${isHoveringClickable ? 'scale-150' : 'scale-100'}`}
+          className={`h-7 w-7 rounded-full border-2 border-slate-950 bg-white/10 shadow-[0_0_0_1px_rgba(255,255,255,0.45)] backdrop-invert transition-transform duration-150 ease-out dark:border-white dark:bg-black/10 ${isHoveringClickable ? 'scale-150' : 'scale-100'}`}
         />
       </div>
+      <div
+        ref={dotRef}
+        aria-hidden="true"
+        className={`fixed left-0 top-0 h-1.5 w-1.5 rounded-full bg-slate-950 shadow-[0_0_0_1px_rgba(255,255,255,0.45)] transition-opacity duration-200 dark:bg-white ${isVisible ? 'opacity-100' : 'opacity-0'}`}
+        style={{ zIndex: 2147483647, pointerEvents: 'none', willChange: 'transform' }}
+      />
     </>
   );
 };

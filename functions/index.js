@@ -7,13 +7,18 @@ admin.initializeApp();
 
 // Get API key from environment - check multiple sources
 const getApiKey = () => {
-  // Try environment variable first (set via gcloud)
+  // Try environment variable first (Firebase Secret or local env)
   if (process.env.OPENROUTER_API_KEY) {
     return process.env.OPENROUTER_API_KEY;
   }
+
+  const runtimeConfigKey = functions.config()?.openrouter?.api_key;
+  if (runtimeConfigKey) {
+    return runtimeConfigKey;
+  }
   
   // Try from .env.local for local emulator
-  if (process.env.DEV && process.env.OPENAI_API_KEY) {
+  if (process.env.OPENAI_API_KEY) {
     return process.env.OPENAI_API_KEY;
   }
   
@@ -21,7 +26,9 @@ const getApiKey = () => {
 };
 
 // Chat Cloud Function
-exports.chat = functions.https.onCall(async (data, context) => {
+exports.chat = functions
+  .runWith({ secrets: ['OPENROUTER_API_KEY'] })
+  .https.onCall(async (data, context) => {
   try {
     const { message } = data;
 
@@ -70,7 +77,10 @@ exports.chat = functions.https.onCall(async (data, context) => {
     console.log('📊 OpenRouter Response status:', response.status);
 
     if (!response.ok) {
-      const error = await response.json();
+      const error = await response.json().catch(async () => {
+        const text = await response.text().catch(() => '');
+        return { error: { message: text || `HTTP ${response.status}` } };
+      });
       console.error('❌ OpenRouter API error:', error);
       throw new functions.https.HttpsError(
         'internal',

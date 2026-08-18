@@ -1,31 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { ArrowLeft, Calendar, Layers, Star, ExternalLink, Github, X } from 'lucide-react';
+import { ArrowLeft, Calendar, Layers, ExternalLink, Github, X } from 'lucide-react';
 import { Project } from '../types';
 import { getTechUrl } from '../data';
+import { OptimizedImage } from './OptimizedImage';
 
 interface ProjectDetailProps {
   project: Project;
   onBack: () => void;
   isPreview?: boolean;
 }
-
-// Helper to generate srcSet for Unsplash images for better performance
-const generateSrcSet = (url: string) => {
-  if (!url || !url.includes('images.unsplash.com')) return undefined;
-  try {
-    const newUrl = new URL(url);
-    const widths = [640, 768, 1024, 1280, 1536, 1920, 2560];
-    return widths.map(w => {
-      newUrl.searchParams.set('w', w.toString());
-      newUrl.searchParams.set('q', '75');
-      newUrl.searchParams.set('auto', 'format');
-      return `${newUrl.toString()} ${w}w`;
-    }).join(', ');
-  } catch (e) {
-    return undefined;
-  }
-};
 
 export const ProjectDetail = ({ project, onBack, isPreview = false }: ProjectDetailProps) => {
   const [selectedImg, setSelectedImg] = useState<string | null>(null);
@@ -56,7 +40,13 @@ export const ProjectDetail = ({ project, onBack, isPreview = false }: ProjectDet
   const containerClass = isPreview ? "h-full overflow-y-auto" : "min-h-screen";
 
   return (
-    <div className={`${containerClass} bg-white dark:bg-black animate-fade-in-up relative transition-colors duration-300`}>
+    <div className={`${containerClass} bg-white dark:bg-black animate-fade-in-up relative transition-colors duration-700 overflow-hidden`}>
+      {/* Live Aurora Gradient Background (Matches Expertise section) */}
+      <div className="absolute inset-0 w-full h-full overflow-hidden pointer-events-none">
+        <div className="absolute top-[-10%] left-[-10%] w-[70%] h-[50%] bg-blue-200/25 dark:bg-blue-600/15 rounded-full blur-[100px] mix-blend-multiply dark:mix-blend-screen"></div>
+        <div className="absolute top-[35%] right-[-15%] w-[65%] h-[50%] bg-purple-200/25 dark:bg-purple-600/15 rounded-full blur-[100px] mix-blend-multiply dark:mix-blend-screen"></div>
+        <div className="absolute bottom-[5%] left-[5%] w-[60%] h-[40%] bg-emerald-200/25 dark:bg-emerald-600/12 rounded-full blur-[100px] mix-blend-multiply dark:mix-blend-screen"></div>
+      </div>
       {/* Navigation */}
       <nav className={`${navPositionClass} top-0 left-0 w-full z-50 px-4 md:px-6 py-4 md:py-6 flex justify-between items-center pointer-events-none`}>
         <button
@@ -70,26 +60,23 @@ export const ProjectDetail = ({ project, onBack, isPreview = false }: ProjectDet
       </nav>
 
       {/* Hero Header */}
-      <header className={`relative w-full pt-24 pb-12 md:pt-32 md:pb-20 px-4 md:px-6 ${project.bgColor} dark:bg-neutral-900 transition-colors duration-500`}>
+      <header className={`relative w-full pt-24 pb-12 md:pt-32 md:pb-20 px-4 md:px-6 bg-transparent transition-colors duration-700`}>
         {/* Background Layers */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           {/* Dark Mode Grid & Spotlight */}
           <div className="hidden dark:block absolute inset-0">
-            <div
-              className="absolute inset-0 opacity-[0.08]"
-              style={{
-                backgroundImage: 'linear-gradient(to right, #808080 1px, transparent 1px), linear-gradient(to bottom, #808080 1px, transparent 1px)',
-                backgroundSize: '40px 40px',
-                maskImage: 'radial-gradient(circle at center, black 40%, transparent 100%)'
-              }}
-            ></div>
-            <div className={`absolute inset-0 ${project.darkGradient || ""}`}></div>
-          </div>
 
-          {/* Light Mode Noise/Texture */}
-          <div className="dark:hidden absolute inset-0">
-            <div className="absolute inset-0 bg-gradient-to-b from-white/60 via-transparent to-transparent opacity-80"></div>
-            <div className="absolute inset-0 opacity-[0.04] bg-[url('https://grainy-gradients.vercel.app/noise.svg')] mix-blend-multiply"></div>
+            <div className="absolute inset-0 animate-pulse-slow" style={{
+              backgroundImage: `radial-gradient(ellipse 80% 60% at 50% -10%, ${
+                [
+                  "rgba(120,119,198,0.18)", // purple
+                  "rgba(56,189,248,0.15)",  // sky
+                  "rgba(52,211,153,0.15)",  // emerald
+                  "rgba(244,114,182,0.15)", // pink
+                  "rgba(250,204,21,0.12)"   // yellow
+                ][(typeof project.id === 'number' ? project.id : String(project.id).charCodeAt(0)) % 5]
+              }, rgba(255,255,255,0))`
+            }}></div>
           </div>
         </div>
 
@@ -105,11 +92,8 @@ export const ProjectDetail = ({ project, onBack, isPreview = false }: ProjectDet
             </div>
 
             <h1
-              className="text-4xl md:text-7xl lg:text-8xl font-serif text-slate-900 dark:text-white leading-tight animate-fade-in-up"
-              style={{
-                animationDelay: '0.2s',
-                fontFamily: project.titleFont || 'inherit'
-              }}
+              className="text-4xl md:text-7xl lg:text-8xl font-poppins font-semibold text-slate-900 dark:text-white leading-tight animate-fade-in-up"
+              style={{ animationDelay: '0.2s' }}
             >
               {project.title || "Project Title"}
             </h1>
@@ -119,18 +103,12 @@ export const ProjectDetail = ({ project, onBack, isPreview = false }: ProjectDet
 
       {/* Main Image */}
       <div className="w-full px-4 md:px-6 -mt-8 md:-mt-12 relative z-10">
-        <div className="max-w-6xl mx-auto aspect-video md:aspect-auto md:h-[70vh] rounded-2xl md:rounded-[2rem] overflow-hidden shadow-2xl border-2 md:border-4 border-white dark:border-neutral-900 animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
+        <div className="max-w-6xl mx-auto aspect-video md:aspect-auto md:h-[70vh] rounded-2xl md:rounded-[2rem] overflow-hidden shadow-md border-2 md:border-4 border-white dark:border-neutral-900 animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
           {project.image ? (
-            <img
+            <OptimizedImage
               src={project.image}
-              srcSet={generateSrcSet(project.image)}
-              sizes="(max-width: 1280px) 100vw, 1280px"
               alt={project.title}
-              className="w-full h-full object-cover md:object-cover transition-all duration-700 hover:scale-105"
-              loading="eager"
-              decoding="async"
-              // @ts-ignore - fetchPriority is standard but types might be outdated
-              fetchPriority="high"
+              className="w-full h-full object-cover md:object-cover transition-transform duration-400 hover:scale-102 will-change-transform"
             />
           ) : (
             <div className="w-full h-full bg-slate-100 dark:bg-neutral-800 flex items-center justify-center text-slate-300 dark:text-neutral-600">No Image Available</div>
@@ -145,35 +123,23 @@ export const ProjectDetail = ({ project, onBack, isPreview = false }: ProjectDet
           {/* Main Description */}
           <div className="md:col-span-2 space-y-8 animate-fade-in-up" style={{ animationDelay: '0.4s' }}>
             <div>
-              <h3
-                className="text-xl md:text-2xl font-serif text-slate-800 dark:text-neutral-100 mb-6"
-                style={{ fontFamily: project.sectionTitleFont || 'inherit' }}
-              >
+              <h3 className="text-xl md:text-2xl font-poppins font-semibold text-slate-800 dark:text-neutral-100 mb-6">
                 Project Overview
               </h3>
-              <p
-                className="text-base md:text-xl text-slate-600 dark:text-neutral-300 leading-relaxed font-light"
-                style={{ fontFamily: project.descriptionFont || 'inherit' }}
-              >
+              <p className="whitespace-pre-wrap text-sm md:text-base text-slate-600 dark:text-neutral-300 leading-relaxed font-normal">
                 {project.description || "No description provided."}
               </p>
             </div>
 
             {/* Dynamic Content Sections */}
             {project.details && project.details.length > 0 ? (
-              <div className="space-y-6 mt-8 border-t border-slate-100 dark:border-neutral-800 pt-8">
+              <div className="space-y-6 mt-8 pt-8">
                 {project.details.map((section, index) => (
                   <div key={index} className="space-y-2">
-                    <h4
-                      className="text-base md:text-lg font-bold text-slate-800 dark:text-neutral-100"
-                      style={{ fontFamily: project.sectionTitleFont || 'inherit' }}
-                    >
+                    <h4 className="text-base md:text-lg font-bold text-slate-800 dark:text-neutral-100">
                       {section.title}
                     </h4>
-                    <p
-                      className="text-sm md:text-base text-slate-600 dark:text-neutral-300 leading-relaxed"
-                      style={{ fontFamily: project.descriptionFont || 'inherit' }}
-                    >
+                    <p className="whitespace-pre-wrap text-sm md:text-base text-slate-600 dark:text-neutral-300 leading-relaxed">
                       {section.content}
                     </p>
                   </div>
@@ -220,10 +186,10 @@ export const ProjectDetail = ({ project, onBack, isPreview = false }: ProjectDet
             {/* Highlights Moved to Left Section */}
             <div className="mt-12 p-4 md:p-6 bg-stone-50 dark:bg-neutral-900 rounded-xl md:rounded-2xl border border-stone-100 dark:border-neutral-800">
               <h4 className="flex items-center gap-2 text-xs md:text-sm font-bold uppercase tracking-widest text-slate-400 mb-2 md:mb-3">
-                <Star size={14} className="md:w-4 md:h-4" /> Key Highlight
+                Key Highlight
               </h4>
-              <p className="text-slate-700 dark:text-neutral-200 font-serif italic text-base md:text-lg">
-                "{project.speciality || "N/A"}"
+              <p className="text-slate-700 dark:text-neutral-200 font-sans text-base md:text-lg">
+                {project.speciality || "N/A"}
               </p>
             </div>
           </div>
@@ -258,15 +224,15 @@ export const ProjectDetail = ({ project, onBack, isPreview = false }: ProjectDet
                 Details
               </h4>
               <dl className="space-y-3 md:space-y-4 text-xs md:text-sm">
-                <div className="flex justify-between border-b border-slate-100 dark:border-neutral-800 pb-2">
+                <div className="flex justify-between pb-2">
                   <dt className="text-slate-500">Role</dt>
                   <dd className="text-slate-800 dark:text-neutral-200 font-medium">Lead Developer</dd>
                 </div>
-                <div className="flex justify-between border-b border-slate-100 dark:border-neutral-800 pb-2">
+                <div className="flex justify-between pb-2">
                   <dt className="text-slate-500">Timeline</dt>
                   <dd className="text-slate-800 dark:text-neutral-200 font-medium">{project.duration || "TBD"}</dd>
                 </div>
-                <div className="flex justify-between border-b border-slate-100 dark:border-neutral-800 pb-2">
+                <div className="flex justify-between pb-2">
                   <dt className="text-slate-500">Theme</dt>
                   <dd className="text-slate-800 dark:text-neutral-200 font-medium capitalize">{project.theme}</dd>
                 </div>
@@ -279,9 +245,9 @@ export const ProjectDetail = ({ project, onBack, isPreview = false }: ProjectDet
 
       {/* Gallery Section */}
       {project.gallery && project.gallery.length > 0 && (
-        <section className="w-full bg-slate-50 dark:bg-neutral-900 py-16 md:py-24 border-t border-slate-200 dark:border-neutral-800 transition-colors duration-300">
+        <section className="w-full bg-slate-50 dark:bg-neutral-900 py-16 md:py-24 transition-colors duration-700">
           <div className="max-w-6xl mx-auto px-4 md:px-6">
-            <h3 className="text-xl md:text-2xl font-serif text-slate-800 dark:text-neutral-100 mb-8 md:mb-12 flex items-center gap-4">
+            <h3 className="text-xl md:text-2xl font-poppins font-semibold text-slate-800 dark:text-neutral-100 mb-8 md:mb-12 flex items-center gap-4">
               <span className="w-8 md:w-12 h-px bg-slate-300 dark:bg-neutral-700"></span>
               Visuals
             </h3>
@@ -292,17 +258,13 @@ export const ProjectDetail = ({ project, onBack, isPreview = false }: ProjectDet
                   onClick={() => setSelectedImg(img)}
                   className="break-inside-avoid relative rounded-xl md:rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-500 bg-slate-200 dark:bg-neutral-800 cursor-zoom-in group"
                 >
-                  <img
+                  <OptimizedImage
                     src={img}
-                    srcSet={generateSrcSet(img)}
-                    sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
                     alt={`${project.title} screenshot ${idx + 1}`}
                     className="w-full h-auto object-cover transition-transform duration-700 group-hover:scale-[1.1]"
-                    loading="lazy"
-                    decoding="async"
                   />
                   {/* Subtle overlay on hover */}
-                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-500 pointer-events-none" />
+                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-700 pointer-events-none" />
                 </div>
               ))}
             </div>

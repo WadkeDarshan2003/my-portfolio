@@ -35,6 +35,7 @@ app.post('/api/chat', async (req, res) => {
     // Try different env variable names
     const apiKey = process.env.VITE_OPENAI_API_KEY || 
                    process.env.OPENAI_API_KEY ||
+                   process.env.OPENROUTER_API_KEY ||
                    process.env.VITE_TOGETHER_API_KEY;
 
     console.log('📝 Received message:', message);
@@ -120,7 +121,9 @@ app.listen(PORT, '0.0.0.0', () => {
 // Test endpoint to verify API key
 app.get('/api/test', async (req, res) => {
   try {
-    const apiKey = process.env.OPENAI_API_KEY;
+    const apiKey = process.env.OPENROUTER_API_KEY ||
+                   process.env.OPENAI_API_KEY ||
+                   process.env.VITE_OPENAI_API_KEY;
     console.log('🧪 Testing API configuration...');
     console.log('🔑 API Key exists:', !!apiKey);
     console.log('🔑 API Key starts with:', apiKey?.substring(0, 10) + '...');

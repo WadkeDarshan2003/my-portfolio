@@ -8,6 +8,7 @@ import {
   query,
   orderBy,
   Timestamp,
+  onSnapshot,
 } from 'firebase/firestore';
 import { db } from '../config/firebase';
 import { Project } from '../../types';
@@ -15,6 +16,23 @@ import { Project } from '../../types';
 const PROJECTS_COLLECTION = 'projects';
 const FIREBASE_TIMEOUT = 15000; // 15 second timeout
 const MAX_RETRIES = 2;
+
+type ProjectWithLegacyFontFields = Partial<Project> & {
+  titleFont?: unknown;
+  descriptionFont?: unknown;
+  sectionTitleFont?: unknown;
+};
+
+const stripProjectFontFields = (project: ProjectWithLegacyFontFields) => {
+  const {
+    titleFont,
+    descriptionFont,
+    sectionTitleFont,
+    ...projectWithoutFonts
+  } = project;
+
+  return projectWithoutFonts;
+};
 
 // Retry wrapper for Firebase operations
 async function withRetry<T>(
@@ -43,13 +61,38 @@ export async function getProjects(): Promise<Project[]> {
     
     return snapshot.docs.map((doc) => ({
       id: doc.id,
-      ...doc.data(),
-      titleFont: 'Public Sans',
-    } as unknown as Project));
+      ...stripProjectFontFields(doc.data() as Partial<Project>),
+    } as Project));
   } catch (error) {
     console.error('Error fetching projects:', error);
     return [];
   }
+}
+
+// Subscribe to real-time project updates (cache-first)
+export function subscribeToProjects(
+  onData: (projects: Project[]) => void,
+  onError: (error: Error) => void
+): () => void {
+  const q = query(collection(db, PROJECTS_COLLECTION), orderBy('createdAt', 'desc'));
+  
+  const unsubscribe = onSnapshot(
+    q,
+    { includeMetadataChanges: true },
+    (snapshot) => {
+      const projects = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...stripProjectFontFields(doc.data() as Partial<Project>),
+      } as Project));
+      onData(projects);
+    },
+    (error) => {
+      console.error('Error in projects subscription:', error);
+      onError(error);
+    }
+  );
+  
+  return unsubscribe;
 }
 
 // Add a new project - simplified
@@ -59,7 +102,7 @@ export async function addProject(
   try {
     console.log('Adding project to Firebase:', project.title);
     const docRef = await addDoc(collection(db, PROJECTS_COLLECTION), {
-      ...project,
+      ...stripProjectFontFields(project),
       createdAt: Timestamp.now(),
       updatedAt: Timestamp.now(),
     });
@@ -83,7 +126,7 @@ export async function updateProject(
   try {
     const projectRef = doc(db, PROJECTS_COLLECTION, projectId);
     await updateDoc(projectRef, {
-      ...updates,
+      ...stripProjectFontFields(updates),
       updatedAt: Timestamp.now(),
     });
     return true;

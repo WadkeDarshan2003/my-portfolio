@@ -35,10 +35,11 @@ export const Expertise = () => {
         opacity: 1,
         duration: 0.8,
         ease: "power2.out",
-        scrollTrigger: {
-          trigger: titleGroupRef.current,
-          start: "top 85%",
-          toggleActions: "play none none reverse",
+          scrollTrigger: {
+            trigger: titleGroupRef.current,
+            start: "top 85%",
+          toggleActions: "play none none none",
+          once: true,
         }
       }
     );
@@ -56,7 +57,8 @@ export const Expertise = () => {
           scrollTrigger: {
             trigger: servicesRef.current,
             start: "top 80%",
-            toggleActions: "play none none reverse",
+            toggleActions: "play none none none",
+            once: true,
           }
         }
       );
@@ -73,7 +75,8 @@ export const Expertise = () => {
         scrollTrigger: {
           trigger: techStackRef.current,
           start: "top 80%",
-          toggleActions: "play none none reverse",
+          toggleActions: "play none none none",
+          once: true,
         }
       }
     );
@@ -81,24 +84,24 @@ export const Expertise = () => {
   }, { scope: containerRef });
 
   return (
-    <section ref={containerRef} id="expertise" className="relative overflow-hidden bg-pastel-1 dark:bg-black py-24 md:py-32 transition-colors duration-500">
+    <section ref={containerRef} id="expertise" className="relative overflow-hidden bg-pastel-1 dark:bg-black py-24 md:py-32 transition-colors duration-700">
        
        {/* --- LIVE AURORA BACKGROUND (No Grain) --- */}
        <div className="absolute inset-0 w-full h-full overflow-hidden pointer-events-none">
           {/* Enhanced gradients for dark mode - Smooth Color Mix */}
-          <div className="absolute top-[-20%] left-[-10%] w-[70%] h-[70%] bg-blue-200/30 dark:bg-blue-600/20 rounded-full blur-[120px] animate-float-slow mix-blend-multiply dark:mix-blend-screen"></div>
-          <div className="absolute top-[20%] right-[-20%] w-[60%] h-[60%] bg-purple-200/30 dark:bg-purple-600/20 rounded-full blur-[120px] animate-float-medium mix-blend-multiply dark:mix-blend-screen delay-1000"></div>
-          <div className="absolute bottom-[-20%] left-[10%] w-[60%] h-[60%] bg-emerald-200/30 dark:bg-emerald-600/10 rounded-full blur-[120px] animate-float-fast mix-blend-multiply dark:mix-blend-screen delay-500"></div>
+          <div className="absolute top-[-20%] left-[-10%] w-[70%] h-[70%] bg-blue-200/25 dark:bg-blue-600/15 rounded-full blur-[80px] mix-blend-multiply dark:mix-blend-screen"></div>
+          <div className="absolute top-[20%] right-[-20%] w-[60%] h-[60%] bg-purple-200/25 dark:bg-purple-600/15 rounded-full blur-[80px] mix-blend-multiply dark:mix-blend-screen"></div>
+          <div className="absolute bottom-[-20%] left-[10%] w-[60%] h-[60%] bg-emerald-200/25 dark:bg-emerald-600/10 rounded-full blur-[80px] mix-blend-multiply dark:mix-blend-screen"></div>
        </div>
 
       <div className="max-w-7xl mx-auto px-6 relative z-10">
         
         {/* Section Title */}
         <div ref={titleGroupRef} className="mb-16 md:mb-20">
-            <div className="inline-flex items-center gap-2 px-3 py-1 mb-4 rounded-full bg-pastel-1/50 dark:bg-white/5 border border-pastel-4 dark:border-white/10 backdrop-blur-md">
+            <div className="inline-flex items-center gap-2 px-3 py-1 mb-4 rounded-full bg-pastel-1/70 dark:bg-white/5 border border-pastel-4 dark:border-white/10">
                 <span className="text-xs font-bold uppercase tracking-widest text-slate-500 dark:text-neutral-400">Proficiency</span>
             </div>
-            <h2 className="text-4xl md:text-6xl font-serif text-slate-900 dark:text-white tracking-tight" style={{ fontFamily: 'Merienda, serif' }}>
+            <h2 className="text-4xl md:text-6xl font-poppins font-semibold text-slate-900 dark:text-white">
               Expertise & Toolkit
             </h2>
         </div>
@@ -118,7 +121,7 @@ export const Expertise = () => {
                     return (
                        <div 
                          key={idx}
-                         className="group flex items-center gap-4 p-5 bg-transparent backdrop-blur-xl border border-pastel-4/60 dark:border-white/5 rounded-2xl hover:bg-pastel-1/30 dark:hover:bg-white/5 transition-all duration-300 hover:scale-[1.01] cursor-default shadow-sm hover:shadow-md dark:shadow-none"
+                         className="group flex items-center gap-4 p-5 bg-white/35 dark:bg-white/[0.02] border border-pastel-4/60 dark:border-white/5 rounded-2xl hover:bg-pastel-1/45 dark:hover:bg-white/5 transition-all duration-300 hover:scale-[1.01] cursor-default shadow-sm hover:shadow-md dark:shadow-none"
                        >
                           <div className="shrink-0 w-10 h-10 bg-pastel-1 dark:bg-white/5 rounded-xl flex items-center justify-center text-slate-700 dark:text-white transition-colors shadow-sm dark:shadow-none">
                              <Icon size={20} strokeWidth={1.5} />
@@ -143,7 +146,7 @@ export const Expertise = () => {
                   <Cpu size={14} /> Technology
                </h3>
 
-               <div ref={techStackRef} className="flex-1 bg-transparent backdrop-blur-xl border border-slate-200/80 dark:border-white/10 rounded-3xl p-8 relative overflow-hidden shadow-lg dark:shadow-blue-900/10 transform transition-transform duration-300 hover:shadow-xl hover:-translate-y-1">
+               <div ref={techStackRef} className="flex-1 bg-white/35 dark:bg-white/[0.02] border border-slate-200/80 dark:border-white/10 rounded-3xl p-8 relative overflow-hidden shadow-lg dark:shadow-blue-900/10 transform transition-transform duration-300 hover:shadow-xl hover:-translate-y-1">
                   {/* Inner gradient for card */}
                   <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent dark:from-white/5 dark:to-transparent pointer-events-none"></div>
                  
@@ -165,13 +168,13 @@ export const Expertise = () => {
                             key={i}
                             className={`group relative flex items-center justify-center transition-all duration-500 hover:scale-125 ${offsetClass}`}
                           >
-                             <img 
-                               src={iconSrc} 
-                               alt={tech.name}
-                               className="w-8 h-8 md:w-10 md:h-10 object-contain transition-all duration-300 group-hover:opacity-0 group-hover:scale-50"
-                               loading="lazy"
-                               decoding="async"
-                             />
+                                  <img 
+                                              src={iconSrc} 
+                                              alt={tech.name}
+                                              className="w-8 h-8 md:w-10 md:h-10 object-contain transition-transform duration-300 group-hover:opacity-0 group-hover:scale-50 filter dark:invert dark:brightness-125"
+                                              loading="lazy"
+                                              decoding="async"
+                                           />
                              {/* Hover Name Overlay */}
                              <span className="absolute inset-0 flex items-center justify-center text-[8px] md:text-[9px] font-black text-slate-800 dark:text-white opacity-0 group-hover:opacity-100 transition-all duration-300 whitespace-nowrap uppercase tracking-tighter pointer-events-none">
                                 {tech.name}
@@ -181,16 +184,16 @@ export const Expertise = () => {
                     })}
                  </div>
 
-                 <div className="mt-10 pt-6 border-t border-slate-200/50 dark:border-white/10 flex items-center justify-between text-[10px] text-slate-500 dark:text-neutral-500 uppercase tracking-widest font-bold relative z-10">
+                 <div className="mt-10 pt-6 flex items-center justify-between text-[10px] text-slate-500 dark:text-neutral-500 uppercase tracking-widest font-bold relative z-10">
                     <span>15+ Technologies in Practice</span>
-                    <span className="flex items-center gap-1.5"><div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.5)]"></div> Constantly Updating</span>
+                    <span className="flex items-center gap-1.5"><div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div> Constantly Updating</span>
                  </div>
               </div>
            </div>
         </div>
 
         {/* BOTTOM TEXT */}
-        <div className="flex justify-center border-t border-slate-200/50 dark:border-white/5 pt-8">
+        <div className="flex justify-center pt-8">
             <p className="text-slate-500 dark:text-neutral-500 text-sm italic font-medium">
                Versatile development capabilities meets high-performance tech.
             </p>
