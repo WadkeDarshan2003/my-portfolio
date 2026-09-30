@@ -2,6 +2,7 @@ import {
   collection,
   addDoc,
   updateDoc,
+  setDoc,
   deleteDoc,
   doc,
   getDocs,
@@ -11,7 +12,7 @@ import {
   onSnapshot,
 } from 'firebase/firestore';
 import { db } from '../config/firebase';
-import { Project } from '../../types';
+import { Project } from '../types';
 
 const PROJECTS_COLLECTION = 'projects';
 const FIREBASE_TIMEOUT = 15000; // 15 second timeout
@@ -51,6 +52,26 @@ async function withRetry<T>(
   }
 }
 
+// Deduplicate projects by title or id
+const dedupeProjects = (projects: Project[]) => {
+  const seen = new Set<string>();
+  return projects.filter((project) => {
+    const key = project.title ? project.title.toLowerCase().trim() : String(project.id);
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+};
+
+const mapDocToProject = (doc: any): Project => {
+  const data = doc.data() as Partial<Project>;
+  const { id: _storedId, ...cleanData } = data;
+  return {
+    ...stripProjectFontFields(cleanData),
+    id: doc.id,
+  } as Project;
+};
+
 // Get all projects - simplified for empty database
 export async function getProjects(): Promise<Project[]> {
   try {
@@ -59,10 +80,7 @@ export async function getProjects(): Promise<Project[]> {
     const snapshot = await getDocs(q);
     console.log(`Found ${snapshot.size} projects in Firebase`);
     
-    return snapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...stripProjectFontFields(doc.data() as Partial<Project>),
-    } as Project));
+    return dedupeProjects(snapshot.docs.map(mapDocToProject));
   } catch (error) {
     console.error('Error fetching projects:', error);
     return [];
@@ -80,10 +98,7 @@ export function subscribeToProjects(
     q,
     { includeMetadataChanges: true },
     (snapshot) => {
-      const projects = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...stripProjectFontFields(doc.data() as Partial<Project>),
-      } as Project));
+      const projects = dedupeProjects(snapshot.docs.map(mapDocToProject));
       onData(projects);
     },
     (error) => {
@@ -97,12 +112,13 @@ export function subscribeToProjects(
 
 // Add a new project - simplified
 export async function addProject(
-  project: Omit<Project, 'id'>
+  project: Omit<Project, 'id'> | Project
 ): Promise<string | null> {
   try {
     console.log('Adding project to Firebase:', project.title);
+    const { id: _storedId, ...projectData } = project as any;
     const docRef = await addDoc(collection(db, PROJECTS_COLLECTION), {
-      ...stripProjectFontFields(project),
+      ...stripProjectFontFields(projectData),
       createdAt: Timestamp.now(),
       updatedAt: Timestamp.now(),
     });
@@ -125,13 +141,19 @@ export async function updateProject(
 ): Promise<boolean> {
   try {
     const projectRef = doc(db, PROJECTS_COLLECTION, projectId);
-    await updateDoc(projectRef, {
-      ...stripProjectFontFields(updates),
-      updatedAt: Timestamp.now(),
-    });
+    const { id: _storedId, createdAt, ...projectData } = updates as any;
+    await setDoc(
+      projectRef,
+      {
+        ...stripProjectFontFields(projectData),
+        ...(createdAt ? { createdAt } : { createdAt: Timestamp.now() }),
+        updatedAt: Timestamp.now(),
+      },
+      { merge: true }
+    );
     return true;
   } catch (error) {
-    console.error('❌ Failed to update project. The document might not exist or connection was lost.');
+    console.error('❌ Failed to update project:', error);
     return false;
   }
 }

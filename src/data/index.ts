@@ -1,5 +1,5 @@
 
-import { DeveloperHistory } from "./types";
+import { DeveloperHistory } from "../types";
 
 export const TECH_LINKS: Record<string, string> = {
   "React": "https://react.dev/",
@@ -10,6 +10,10 @@ export const TECH_LINKS: Record<string, string> = {
   "TypeScript": "https://www.geeksforgeeks.org/typescript/typescript-tutorial/",
   "Generative AI": "https://generativeai.net/",
   "Firebase": "https://firebase.google.com/",
+  "Supabase": "https://supabase.com/",
+  "Anthropic": "https://www.anthropic.com/",
+  "OpenAI Codex": "https://openai.com/",
+  "Codex": "https://openai.com/",
   "SQL": "https://www.w3schools.com/sql/",
   "GitLab": "https://about.gitlab.com/",
   "GitHub": "https://github.com/",
@@ -43,13 +47,16 @@ export const STACK_LOGOS = [
   { name: "React", slug: "react" },
   { name: "Node.js", slug: "nodedotjs" },
   { name: "Express.js", slug: "express" },
-    { name: "MongoDB", slug: "mongodb" },
-    { name: "GitHub", slug: "github" },
+  { name: "MongoDB", slug: "mongodb" },
+  { name: "GitHub", slug: "github" },
   { name: "TypeScript", slug: "typescript" },
   { name: "Python", slug: "python" },
   { name: "React Native", slug: "react" }, // Moved here to separate from React
   { name: "Generative AI", slug: "google" }, // Using Google as proxy for GenAI/Gemini
+  { name: "Anthropic", slug: "anthropic" },
+  { name: "OpenAI Codex", slug: "openai" },
   { name: "Firebase", slug: "firebase" },
+  { name: "Supabase", slug: "supabase" },
   { name: "SQL", slug: "mysql" }, // Using MySQL as generic SQL logo
   { name: "GitLab", slug: "gitlab" },
   { name: "WordPress", slug: "wordpress" },
@@ -69,7 +76,7 @@ export const DEVELOPER_INFO = {
   skills: [
     "React", "React Native", "Node.js", "Express.js", "MongoDB", "TypeScript", 
     "JavaScript", "Python",
-    "Generative AI", "Firebase", "SQL",
+    "Generative AI", "Anthropic", "OpenAI Codex", "Firebase", "Supabase", "SQL",
     "GitLab", "GitHub", "WordPress", "Shopify", "Tailwind CSS", "Bootstrap", "Framer Motion"
   ],
   // Deliverables (What I build)

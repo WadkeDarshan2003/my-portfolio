@@ -72,7 +72,7 @@
 }
 
 /* Tailwind 4 class-based dark mode support */
-@variant dark (&:where(.dark, .dark *));
+@custom-variant dark (&:where(.dark, .dark *));
 
 @font-face {
   font-family: 'Humblle Rought Caps';

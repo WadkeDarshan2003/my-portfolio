@@ -14,6 +14,39 @@ export const CustomCursor = () => {
   const hoveringRef = useRef(false);
 
   useEffect(() => {
+    const animate = () => {
+      const targetX = mouseRef.current.x;
+      const targetY = mouseRef.current.y;
+
+      const dx = targetX - ringPosRef.current.x;
+      const dy = targetY - ringPosRef.current.y;
+
+      if (Math.abs(dx) > 0.05 || Math.abs(dy) > 0.05) {
+        ringPosRef.current.x += dx * 0.25;
+        ringPosRef.current.y += dy * 0.25;
+
+        if (ringRef.current) {
+          ringRef.current.style.transform = `translate3d(${ringPosRef.current.x - 14}px, ${ringPosRef.current.y - 14}px, 0)`;
+        }
+
+        if (dotRef.current) {
+          dotRef.current.style.transform = `translate3d(${targetX - 3}px, ${targetY - 3}px, 0)`;
+        }
+
+        animationRef.current = requestAnimationFrame(animate);
+      } else {
+        ringPosRef.current.x = targetX;
+        ringPosRef.current.y = targetY;
+        if (ringRef.current) {
+          ringRef.current.style.transform = `translate3d(${targetX - 14}px, ${targetY - 14}px, 0)`;
+        }
+        if (dotRef.current) {
+          dotRef.current.style.transform = `translate3d(${targetX - 3}px, ${targetY - 3}px, 0)`;
+        }
+        animationRef.current = 0;
+      }
+    };
+
     const handleMouseMove = (event: MouseEvent) => {
       const nextX = event.clientX;
       const nextY = event.clientY;
@@ -28,6 +61,10 @@ export const CustomCursor = () => {
 
       mouseRef.current.x = nextX;
       mouseRef.current.y = nextY;
+
+      if (!animationRef.current) {
+        animationRef.current = requestAnimationFrame(animate);
+      }
     };
 
     const handleTouchStart = () => {
@@ -54,29 +91,9 @@ export const CustomCursor = () => {
       }
     };
 
-    const animate = () => {
-      const targetX = mouseRef.current.x;
-      const targetY = mouseRef.current.y;
-
-      ringPosRef.current.x += (targetX - ringPosRef.current.x) * 0.22;
-      ringPosRef.current.y += (targetY - ringPosRef.current.y) * 0.22;
-
-      if (ringRef.current) {
-        ringRef.current.style.transform = `translate3d(${ringPosRef.current.x - 14}px, ${ringPosRef.current.y - 14}px, 0)`;
-      }
-
-      if (dotRef.current) {
-        dotRef.current.style.transform = `translate3d(${targetX - 3}px, ${targetY - 3}px, 0)`;
-      }
-
-      animationRef.current = requestAnimationFrame(animate);
-    };
-
-    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('mousemove', handleMouseMove, { passive: true });
     window.addEventListener('touchstart', handleTouchStart, { passive: true });
-    document.addEventListener('mouseover', handleMouseOver);
-
-    animationRef.current = requestAnimationFrame(animate);
+    document.addEventListener('mouseover', handleMouseOver, { passive: true });
 
     return () => {
       window.removeEventListener('mousemove', handleMouseMove);
@@ -86,7 +103,7 @@ export const CustomCursor = () => {
         cancelAnimationFrame(animationRef.current);
       }
     };
-  }, []);
+  }, [isVisible]);
 
   if (!isEnabled) {
     return null;

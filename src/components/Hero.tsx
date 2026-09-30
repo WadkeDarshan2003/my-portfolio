@@ -77,7 +77,7 @@ export const Hero = () => {
       
       {/* --- BACKGROUND FX LAYERS --- */}
       {/* Base Gradient (Same for both modes) */}
-      <div className="absolute inset-0 pointer-events-none bg-gradient-to-br from-[#ff5722] via-[#d84315] to-[#bf360c] z-0 transition-colors duration-700"></div>
+      <div className="absolute inset-0 pointer-events-none bg-linear-to-br from-[#ff5722] via-[#d84315] to-[#bf360c] z-0 transition-colors duration-700"></div>
       
       {/* Dark Mode: Theme Modifier Vignette (Dynamic Spotlight - Black) */}
       <div 
@@ -100,7 +100,7 @@ export const Hero = () => {
         
         {/* Infinite Grid Floor (Double Layered) */}
         <div 
-          className="absolute -left-[100%] -top-[50%] w-[300%] h-[300%] transform-style-3d"
+          className="absolute -left-full -top-[50%] w-[300%] h-[300%] transform-style-3d"
           style={{
             transform: 'rotateX(75deg) translateZ(-150px)',
             maskImage: 'radial-gradient(circle at 50% 50%, black 0%, transparent 60%)',
@@ -140,7 +140,7 @@ export const Hero = () => {
         </div>
 
         {/* Central Rotating Rings around Title */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[350px] md:w-[800px] h-[350px] md:h-[800px] pointer-events-none opacity-30 select-none z-0">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-87.5 md:w-200 h-87.5 md:h-200 pointer-events-none opacity-30 select-none z-0">
            {/* Ring 1 - Outer Slow */}
            <div className="absolute inset-0 border-[1.5px] border-white/40 rounded-full hero-spin-reverse opacity-40" style={{ willChange: 'transform' }}>
               <div className="absolute top-1/2 -right-1 w-2 h-2 bg-white rounded-full shadow-[0_0_10px_rgba(255,255,255,0.8)]"></div>
@@ -206,7 +206,7 @@ export const Hero = () => {
 
         {/* Tech Badges */}
         <div className="flex flex-wrap justify-center gap-3 animate-fade-in-up" style={{ animationDelay: '0.4s' }}>
-             {["React", "Firebase", "Node.js", "Gen AI"].map((tech, i) => (
+             {["React", "MongoDB", "Firebase", "Node.js", "Gen AI"].map((tech, i) => (
                <span 
                  key={tech} 
                  className="px-4 py-1.5 text-xs font-bold uppercase tracking-widest text-white border border-white/30 rounded-full bg-white/10 backdrop-blur-sm hover:bg-white/20 hover:scale-110 transition-all cursor-default shadow-sm duration-700"
@@ -222,7 +222,7 @@ export const Hero = () => {
       {/* Scroll Indicator */}
       <div 
         onClick={() => {
-          const nextSection = document.getElementById('achievement') || document.getElementById('projects');
+          const nextSection = document.getElementById('projects') || document.getElementById('process');
           if (nextSection) {
             nextSection.scrollIntoView({ behavior: 'smooth' });
           } else {
@@ -238,7 +238,7 @@ export const Hero = () => {
       </div>
 
       {/* Smooth Transition to Next Section (Dark Mode Only) */}
-      <div className="absolute bottom-0 left-0 w-full h-40 bg-gradient-to-t from-transparent dark:from-black to-transparent pointer-events-none z-30 transition-opacity duration-700 opacity-0 dark:opacity-100"></div>
+      <div className="absolute bottom-0 left-0 w-full h-40 bg-linear-to-t from-transparent dark:from-black to-transparent pointer-events-none z-30 transition-opacity duration-700 opacity-0 dark:opacity-100"></div>
 
     </section>
   );

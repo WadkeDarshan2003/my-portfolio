@@ -7,17 +7,17 @@ import { ProjectDetail } from './ProjectDetail';
 import { ScrollCard } from './Achievement';
 import { Toast, useToast } from './Toast';
 import { CustomCursor } from './CustomCursor';
-import { uploadFile } from '../src/services/storageService';
+import { uploadFile } from '../services/storageService';
 
 interface AdminPanelProps {
   projects: Project[];
-  onAdd: (project: Project) => void | Promise<void>;
-  onUpdate: (project: Project) => void | Promise<void>;
-  onDelete: (id: number | string) => void | Promise<void>;
+  onAdd: (project: Project) => Promise<string | null> | void;
+  onUpdate: (project: Project) => Promise<boolean | void> | void;
+  onDelete: (id: number | string) => Promise<boolean | void> | void;
   achievements: AchievementCardData[];
-  onAddAchievement: (achievement: AchievementCardData) => void | Promise<void>;
-  onUpdateAchievement: (achievement: AchievementCardData) => void | Promise<void>;
-  onDeleteAchievement: (id: number | string) => void | Promise<void>;
+  onAddAchievement: (achievement: AchievementCardData) => Promise<string | null> | void;
+  onUpdateAchievement: (achievement: AchievementCardData) => Promise<boolean | void> | void;
+  onDeleteAchievement: (id: number | string) => Promise<boolean | void> | void;
   onExit: () => void;
 }
 
@@ -33,7 +33,7 @@ const EMPTY_PROJECT: any = {
   theme: "light",
   bgColor: "bg-transparent",
   hexColor: "#64748b",
-  status: "draft",
+  status: "published",
   gallery: [],
   details: [],
   websiteUrl: "",
@@ -55,7 +55,7 @@ const EMPTY_ACHIEVEMENT: any = {
   credentialId: "",
   website: "",
   skills: [],
-  status: "draft",
+  status: "published",
   order: 0,
 };
 
@@ -109,13 +109,21 @@ export const AdminPanel = ({ projects, onAdd, onUpdate, onDelete, achievements, 
         if (editingId) {
           await onUpdate(itemToSave);
         } else {
-          await onAdd(itemToSave);
+          const newId = await onAdd(itemToSave);
+          if (newId) {
+            setEditingId(newId);
+            setFormData((prev: any) => ({ ...prev, id: newId }));
+          }
         }
       } else {
         if (editingId) {
           await onUpdateAchievement(itemToSave);
         } else {
-          await onAddAchievement(itemToSave);
+          const newId = await onAddAchievement(itemToSave);
+          if (newId) {
+            setEditingId(newId);
+            setFormData((prev: any) => ({ ...prev, id: newId }));
+          }
         }
       }
       toast.success(`${activeTab === 'projects' ? 'Project' : 'Achievement'} saved successfully!`);
@@ -239,7 +247,7 @@ export const AdminPanel = ({ projects, onAdd, onUpdate, onDelete, achievements, 
     <>
       <CustomCursor />
       {(isSaving || isDeleting || isUploading) && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/40 backdrop-blur-sm transition-opacity">
+        <div className="fixed inset-0 z-100 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm transition-opacity">
           <div className="bg-white p-8 rounded-2xl shadow-2xl flex flex-col items-center gap-2 border border-slate-200 text-center">
             <Loader2 size={36} className="animate-spin text-slate-900 mb-2" />
             <p className="font-semibold text-slate-800 tracking-wide">
@@ -313,7 +321,7 @@ export const AdminPanel = ({ projects, onAdd, onUpdate, onDelete, achievements, 
                   )}
                 </div>
                 <div className="flex justify-between items-center mt-1">
-                   <p className={`text-[10px] truncate max-w-[140px] ${editingId === p.id ? 'text-slate-400' : 'text-slate-400'}`}>
+                   <p className={`text-[10px] truncate max-w-35 ${editingId === p.id ? 'text-slate-400' : 'text-slate-400'}`}>
                      {p.category || "No Category"}
                    </p>
                    {editingId === p.id && (

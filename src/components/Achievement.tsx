@@ -1,7 +1,8 @@
 import React, { useRef } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
-import { Award, BookOpen, Briefcase, Calendar, GraduationCap, MapPin, ShieldCheck, ArrowDown } from "lucide-react";
+import { Award, BookOpen, Briefcase, Calendar, GraduationCap, MapPin, ShieldCheck, ArrowDown, BadgeCheck, Building2 } from "lucide-react";
 import { AchievementCardData } from "../types";
+import { getOptimizedImageUrl } from "../utils/cdn";
 
 const Meta = ({ icon: Icon, children }: { icon: React.ElementType; children: React.ReactNode }) => (
   <span className="inline-flex items-center gap-1.5">
@@ -16,21 +17,41 @@ const getAchievementKey = (card: AchievementCardData, index: number) =>
 const AchievementIcon = ({ card }: { card: AchievementCardData }) => {
   const [imgError, setImgError] = React.useState(false);
   const domain = React.useMemo(() => {
-    if (!card.website) return null;
-    return card.website.replace(/^(?:https?:\/\/)?(?:www\.)?/i, "").split('/')[0];
-  }, [card.website]);
+    if (card.website) {
+      return card.website.replace(/^(?:https?:\/\/)?(?:www\.)?/i, "").split('/')[0];
+    }
+    const org = (card.organization || card.issuer || "").toLowerCase();
+    if (org.includes("anthropic")) return "anthropic.com";
+    if (org.includes("infosys")) return "infosys.com";
+    if (org.includes("verizon")) return "verizon.com";
+    if (org.includes("kydoscope")) return "kydoscope.com";
+    if (org.includes("sinhgad")) return "sinhgad.edu";
+    if (org.includes("infotrixs")) return "infotrixs.in";
+    return null;
+  }, [card.website, card.organization, card.issuer]);
+
+  const logoUrl = React.useMemo(() => {
+    if (!domain) return '';
+    return getOptimizedImageUrl(`https://logo.clearbit.com/${domain}?size=100`, { width: 100 });
+  }, [domain]);
 
   return (
     <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-slate-950 text-white dark:bg-white dark:text-black overflow-hidden relative border border-slate-200 dark:border-neutral-800">
-      {domain && !imgError ? (
+      {domain && !imgError && logoUrl ? (
         <img 
-          src={`https://logo.clearbit.com/${domain}?size=100`} 
-          alt="Logo" 
+          src={logoUrl} 
+          alt={`${card.organization || card.issuer || 'Company'} logo`} 
           className="w-full h-full object-cover bg-white"
+          loading="lazy"
+          decoding="async"
           onError={() => setImgError(true)}
         />
+      ) : card.type === "experience" ? (
+        <Building2 size={22} className="text-sky-400 dark:text-sky-500" />
+      ) : card.type === "education" ? (
+        <GraduationCap size={22} className="text-purple-400 dark:text-purple-500" />
       ) : (
-        card.type === "experience" ? <Briefcase size={22} /> : card.type === "education" ? <GraduationCap size={22} /> : <ShieldCheck size={22} />
+        <Award size={22} className="text-amber-400 dark:text-amber-500" />
       )}
     </div>
   );
@@ -38,16 +59,16 @@ const AchievementIcon = ({ card }: { card: AchievementCardData }) => {
 
 export const ScrollCard = ({ card, index }: { card: AchievementCardData; index: number }) => {
   return (
-    <div className="flex h-screen w-full items-center">
+    <div className="flex h-screen w-full items-center justify-center py-4">
       <motion.article
-        initial={{ y: 36, scale: 0.96, opacity: 0 }}
+        initial={{ y: 40, scale: 0.94, opacity: 0.2 }}
         whileInView={{ y: 0, scale: 1, opacity: 1 }}
-        viewport={{ margin: "-100px", once: true }}
-        transition={{ duration: 0.55, ease: "easeOut" }}
+        viewport={{ amount: 0.25 }}
+        transition={{ duration: 0.45, ease: "easeOut" }}
         style={{
           zIndex: 10 + index,
         }}
-        className="w-full rounded-2xl border border-slate-200/80 bg-white/95 p-6 backdrop-blur-md dark:border-neutral-800 dark:bg-neutral-950/95 md:p-8"
+        className="w-full max-w-xl mx-auto rounded-2xl border border-slate-200/80 bg-white/95 p-6 backdrop-blur-md dark:border-neutral-800 dark:bg-neutral-950/95 md:p-8 shadow-2xl"
       >
         <div className="flex items-start justify-between gap-5">
           <div className="flex items-center gap-3">
@@ -119,10 +140,10 @@ export const ScrollCard = ({ card, index }: { card: AchievementCardData; index: 
           )}
         </div>
 
-        <div className="mt-10 h-px bg-gradient-to-r from-slate-200 via-slate-300 to-transparent dark:from-neutral-800 dark:via-neutral-700" />
+        <div className="mt-10 h-px bg-linear-to-r from-slate-200 via-slate-300 to-transparent dark:from-neutral-800 dark:via-neutral-700" />
         <div className="mt-5 flex items-center justify-between text-xs font-bold uppercase tracking-widest text-slate-400 dark:text-neutral-600">
           <span>{card.type === "experience" ? "Professional Track" : card.type === "education" ? "Academic Track" : "Verified Learning"}</span>
-          <BookOpen size={16} />
+          <BadgeCheck size={16} className="text-emerald-500 dark:text-emerald-400" />
         </div>
       </motion.article>
     </div>
@@ -147,29 +168,23 @@ const AchievementSection = ({ achievements }: { achievements: AchievementCardDat
     <section
       ref={sectionRef}
       id="achievement"
-      className="relative isolate bg-stone-50 dark:bg-black transition-colors duration-700 h-auto lg:h-[var(--section-height)]"
+      className="relative isolate bg-transparent transition-colors duration-700 h-auto lg:h-(--section-height)"
       style={{ "--section-height": `${achievements.length * 100}vh` } as React.CSSProperties}
     >
-      {/* Live Aurora Background (Matches Expertise section) */}
-      <div className="absolute inset-0 w-full h-full overflow-hidden pointer-events-none">
-        <div className="absolute top-[-20%] left-[-10%] w-[70%] h-[70%] bg-blue-200/20 dark:bg-blue-600/15 rounded-full blur-[90px] mix-blend-multiply dark:mix-blend-screen" />
-        <div className="absolute top-[30%] right-[-15%] w-[60%] h-[60%] bg-purple-200/20 dark:bg-purple-600/15 rounded-full blur-[90px] mix-blend-multiply dark:mix-blend-screen" />
-        <div className="absolute bottom-[-10%] left-[10%] w-[60%] h-[60%] bg-emerald-200/20 dark:bg-emerald-600/10 rounded-full blur-[90px] mix-blend-multiply dark:mix-blend-screen" />
-      </div>
 
       {/* Desktop Sticky View */}
       <div className="hidden lg:block sticky top-0 z-10 h-screen overflow-hidden">
         <div className="mx-auto grid h-full max-w-7xl px-6 lg:grid-cols-[minmax(0,0.82fr)_minmax(0,1.18fr)] items-center gap-10 lg:gap-16">
           <aside className="z-10 h-full flex flex-col justify-center">
             <div className="flex max-w-xl flex-col justify-start">
-            <div className="inline-flex w-fit items-center gap-2 rounded-full border border-slate-200/80 bg-white/70 px-3 py-1 dark:border-neutral-800 dark:bg-white/[0.04]">
+            <div className="inline-flex w-fit items-center gap-2 rounded-full border border-slate-200/80 bg-white/70 px-3 py-1 dark:border-neutral-800 dark:bg-white/4">
               <Award size={14} className="text-slate-500 dark:text-neutral-400" />
               <span className="text-xs font-bold uppercase tracking-widest text-slate-500 dark:text-neutral-400">
                 Achievement
               </span>
             </div>
 
-            <h2 className="mt-5 text-3xl md:text-5xl font-poppins font-bold leading-tight text-slate-950 dark:text-white">
+            <h2 className="mt-5 text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-poppins font-bold leading-tight text-slate-950 dark:text-white">
               Learning milestones that stack into real product craft.
             </h2>
 
@@ -212,7 +227,7 @@ const AchievementSection = ({ achievements }: { achievements: AchievementCardDat
       <div className="lg:hidden mx-auto max-w-7xl px-6 py-20">
         <aside className="mb-12">
           <div className="flex max-w-xl flex-col justify-start">
-            <div className="inline-flex w-fit items-center gap-2 rounded-full border border-slate-200/80 bg-white/70 px-3 py-1 dark:border-neutral-800 dark:bg-white/[0.04]">
+            <div className="inline-flex w-fit items-center gap-2 rounded-full border border-slate-200/80 bg-white/70 px-3 py-1 dark:border-neutral-800 dark:bg-white/4">
               <Award size={14} className="text-slate-500 dark:text-neutral-400" />
               <span className="text-xs font-bold uppercase tracking-widest text-slate-500 dark:text-neutral-400">
                 Achievement

@@ -1,5 +1,5 @@
 // OpenClaw Chat Service Integration
-import { DEVELOPER_INFO } from '../../data';
+import { DEVELOPER_INFO } from '../data';
 import { functions } from '../config/firebase';
 import { httpsCallable } from 'firebase/functions';
 

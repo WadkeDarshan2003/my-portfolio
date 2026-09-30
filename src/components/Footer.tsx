@@ -8,7 +8,7 @@ interface FooterProps {
 
 export const Footer = ({ onAdminClick }: FooterProps) => {
   return (
-    <footer className="bg-pastel-1 dark:bg-black pt-16 md:pt-20 pb-10 flex flex-col justify-center relative transition-colors duration-700">
+    <footer className="bg-transparent pt-16 md:pt-20 pb-10 flex flex-col justify-center relative transition-colors duration-700">
       <div className="max-w-7xl mx-auto px-6 w-full">
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-16 lg:gap-24 mb-16 md:mb-20">
@@ -37,22 +37,22 @@ export const Footer = ({ onAdminClick }: FooterProps) => {
               <ul className="space-y-3 md:space-y-4 text-sm md:text-base">
                 <li>
                   <a href={DEVELOPER_INFO.socials.github} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-slate-600 dark:text-neutral-400 hover:text-slate-900 dark:hover:text-white transition-colors">
-                    <Github size={16} className="md:w-[18px] md:h-[18px]" /> GitHub
+                    <Github size={16} className="md:w-4.5 md:h-4.5" /> GitHub
                   </a>
                 </li>
                 <li>
                   <a href={DEVELOPER_INFO.socials.linkedin} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-slate-600 dark:text-neutral-400 hover:text-slate-900 dark:hover:text-white transition-colors">
-                    <Linkedin size={16} className="md:w-[18px] md:h-[18px]" /> LinkedIn
+                    <Linkedin size={16} className="md:w-4.5 md:h-4.5" /> LinkedIn
                   </a>
                 </li>
                 <li>
                   <a href={DEVELOPER_INFO.socials.whatsapp} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-slate-600 dark:text-neutral-400 hover:text-slate-900 dark:hover:text-white transition-colors">
-                    <MessageCircle size={16} className="md:w-[18px] md:h-[18px]" /> WhatsApp
+                    <MessageCircle size={16} className="md:w-4.5 md:h-4.5" /> WhatsApp
                   </a>
                 </li>
                  <li>
                   <a href={DEVELOPER_INFO.socials.instagram} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-slate-600 dark:text-neutral-400 hover:text-slate-900 dark:hover:text-white transition-colors">
-                    <Instagram size={16} className="md:w-[18px] md:h-[18px]" /> Instagram
+                    <Instagram size={16} className="md:w-4.5 md:h-4.5" /> Instagram
                   </a>
                 </li>
               </ul>

@@ -42,13 +42,7 @@ const steps = [
 
 export const Process = () => {
   return (
-    <section id="process" className="py-24 md:py-32 bg-stone-50 dark:bg-black relative overflow-hidden transition-colors duration-700">
-      {/* Live Aurora Background (Matches Expertise section) */}
-      <div className="absolute inset-0 w-full h-full overflow-hidden pointer-events-none">
-        <div className="absolute top-[-20%] left-[-10%] w-[70%] h-[70%] bg-blue-200/20 dark:bg-blue-600/15 rounded-full blur-[90px] mix-blend-multiply dark:mix-blend-screen" />
-        <div className="absolute top-[30%] right-[-15%] w-[60%] h-[60%] bg-purple-200/20 dark:bg-purple-600/15 rounded-full blur-[90px] mix-blend-multiply dark:mix-blend-screen" />
-        <div className="absolute bottom-[-10%] left-[10%] w-[60%] h-[60%] bg-emerald-200/20 dark:bg-emerald-600/10 rounded-full blur-[90px] mix-blend-multiply dark:mix-blend-screen" />
-      </div>
+    <section id="process" className="py-24 md:py-32 bg-transparent relative overflow-hidden transition-colors duration-700">
       
       <div className="w-full relative z-10">
         
@@ -62,7 +56,7 @@ export const Process = () => {
         </div>
 
         {/* Desktop Connector Line */}
-        <div className="hidden lg:block absolute top-[calc(18rem+28px)] left-0 w-full h-px bg-slate-200 dark:bg-neutral-800 z-0"></div>
+        <div className="hidden lg:block absolute top-79 left-0 w-full h-px bg-slate-200 dark:bg-neutral-800 z-0"></div>
 
         {/* Steps Grid (Responsive: 1-col on mobile, 2-col on small tablets, 6-col on desktop) */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4 md:gap-5 lg:gap-6 relative z-10 w-full px-4 sm:px-6 md:px-8 lg:px-12">

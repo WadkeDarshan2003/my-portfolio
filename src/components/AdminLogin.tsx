@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Mail, Lock as LockIcon, AlertCircle, Loader2, ArrowLeft } from 'lucide-react';
-import { loginAdmin } from '../src/services/authService';
+import { loginAdmin } from '../services/authService';
 import { CustomCursor } from './CustomCursor';
 
 interface AdminLoginProps {
@@ -42,7 +42,7 @@ export const AdminLogin = ({ onLoginSuccess }: AdminLoginProps) => {
     <>
       <CustomCursor />
       {loading && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-md transition-opacity">
+        <div className="fixed inset-0 z-100 flex items-center justify-center bg-black/60 backdrop-blur-md transition-opacity">
           <div className="bg-slate-900 p-8 rounded-2xl shadow-2xl flex flex-col items-center gap-2 border border-slate-700 text-center">
             <Loader2 size={36} className="animate-spin text-white mb-2" />
             <p className="font-semibold text-white tracking-wide">Verifying Credentials</p>
@@ -50,7 +50,7 @@ export const AdminLogin = ({ onLoginSuccess }: AdminLoginProps) => {
           </div>
         </div>
       )}
-      <main className="w-full relative min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 dark:from-black dark:via-slate-900 dark:to-black flex items-center justify-center p-4 overflow-hidden">
+      <main className="w-full relative min-h-screen bg-linear-to-br from-slate-900 via-slate-800 to-slate-900 dark:from-black dark:via-slate-900 dark:to-black flex items-center justify-center p-4 overflow-hidden">
         
         {/* Back Button */}
         <button
@@ -63,8 +63,8 @@ export const AdminLogin = ({ onLoginSuccess }: AdminLoginProps) => {
         
         {/* Background Effects */}
         <div className="absolute inset-0 pointer-events-none overflow-hidden">
-          <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-blue-600/20 blur-[150px] rounded-full"></div>
-          <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-purple-600/20 blur-[150px] rounded-full"></div>
+          <div className="absolute top-0 left-1/4 w-125 h-125 bg-blue-600/20 blur-[150px] rounded-full"></div>
+          <div className="absolute bottom-0 right-1/4 w-125 h-125 bg-purple-600/20 blur-[150px] rounded-full"></div>
         </div>
 
         {/* Login Card */}
@@ -88,6 +88,7 @@ export const AdminLogin = ({ onLoginSuccess }: AdminLoginProps) => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="admin@portfolio.com"
+                  autoComplete="username"
                   className="w-full pl-10 pr-4 py-3 bg-slate-800/50 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-white focus:border-transparent transition-all"
                   required
                   disabled={loading}
@@ -105,6 +106,7 @@ export const AdminLogin = ({ onLoginSuccess }: AdminLoginProps) => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
+                  autoComplete="current-password"
                   className="w-full pl-10 pr-4 py-3 bg-slate-800/50 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-white focus:border-transparent transition-all"
                   required
                   disabled={loading}

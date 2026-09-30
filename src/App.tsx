@@ -1,5 +1,4 @@
-
-import React, { Suspense, lazy, useState, useEffect } from "react";
+import React, { Suspense, lazy, useState, useEffect, useMemo, useCallback } from "react";
 import { Hero } from "./components/Hero";
 import { CircularProjectSlider } from "./components/CircularProjectSlider";
 import { AIChat } from "./components/AIChat";
@@ -9,13 +8,14 @@ import { CustomCursor } from "./components/CustomCursor";
 import { AudioPlayer } from "./components/AudioPlayer";
 import { Process } from "./components/Process";
 import { Expertise } from "./components/Expertise";
-import { Achievement } from "./components/Achievement";
+import { Packages } from "./components/Packages";
+import { AchievementSlider } from "./components/AchievementSlider";
 import { DEVELOPER_INFO } from "./data";
 import { Project, AchievementCardData } from "./types";
 import { Sun, Moon } from "lucide-react";
-import { subscribeToProjects, addProject, updateProject, deleteProject } from "./src/services/projectService";
-import { subscribeToAchievements, addAchievement, updateAchievement, deleteAchievement } from "./src/services/achievementService";
-import { onUserAuthStateChanged } from "./src/services/authService";
+import { subscribeToProjects, addProject, updateProject, deleteProject } from "./services/projectService";
+import { subscribeToAchievements, addAchievement, updateAchievement, deleteAchievement } from "./services/achievementService";
+import { onUserAuthStateChanged } from "./services/authService";
 import { User } from "firebase/auth";
 
 const ProjectDetail = lazy(() =>
@@ -35,26 +35,68 @@ const ViewFallback = () => (
 );
 
 const App = () => {
-  // State for Projects (ONLY from Firebase - no fallback)
-  const [projects, setProjects] = useState<Project[]>([]);
-  const [achievements, setAchievements] = useState<AchievementCardData[]>([]);
-  const [loading, setLoading] = useState(true);
+  // State for Projects (with browser sessionStorage caching for zero-wait load)
+  const [projects, setProjects] = useState<Project[]>(() => {
+    try {
+      const cached = sessionStorage.getItem('cached_projects');
+      return cached ? JSON.parse(cached) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  const [achievements, setAchievements] = useState<AchievementCardData[]>(() => {
+    try {
+      const cached = sessionStorage.getItem('cached_achievements');
+      return cached ? JSON.parse(cached) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  // Filter for published projects (default to showing if status is not explicitly set to 'draft')
+  const publishedProjects = useMemo(
+    () => projects.filter(p => !p.status || p.status === 'published' || p.status !== 'draft'),
+    [projects]
+  );
+
+  const [loading, setLoading] = useState<boolean>(() => {
+    try {
+      const hasProjects = !!sessionStorage.getItem('cached_projects');
+      const hasAchievements = !!sessionStorage.getItem('cached_achievements');
+      return !(hasProjects && hasAchievements);
+    } catch {
+      return true;
+    }
+  });
+
   const [firebaseStatus, setFirebaseStatus] = useState<{
     connected: boolean;
     error?: string;
-  }>({ connected: false });
+  }>({ connected: true });
   
   // Authentication State
   const [adminUser, setAdminUser] = useState<User | null>(null);
   const [isAdminMode, setIsAdminMode] = useState(false);
   const [showAdminLogin, setShowAdminLogin] = useState(false);
 
+  // Track scroll position to unrender fixed Hero layer when scrolled past 100vh
+  const [isHeroPast, setIsHeroPast] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const past = window.scrollY > window.innerHeight * 1.15;
+      setIsHeroPast(past);
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   // Monitor admin authentication state
   useEffect(() => {
     const unsubscribe = onUserAuthStateChanged((user) => {
       setAdminUser(user);
       if (!user) {
-        // User logged out, exit admin mode
         setIsAdminMode(false);
         setShowAdminLogin(false);
       }
@@ -63,9 +105,7 @@ const App = () => {
     return () => unsubscribe();
   }, []);
   
-  // Load projects and achievements from Firebase only. Migration scripts are not
-  // run from the website to avoid creating duplicates on normal page loads.
-  // Load projects and achievements using real-time cache-first listeners
+  // Load projects and achievements using real-time cache-first listeners with browser caching
   useEffect(() => {
     let projectsLoaded = false;
     let achievementsLoaded = false;
@@ -77,11 +117,14 @@ const App = () => {
       }
     };
 
-    setLoading(true);
-
     const unsubProjects = subscribeToProjects(
       (data) => {
         setProjects(data);
+        try {
+          sessionStorage.setItem('cached_projects', JSON.stringify(data));
+        } catch (e) {
+          console.warn('Failed to cache projects in sessionStorage:', e);
+        }
         if (!projectsLoaded) {
           projectsLoaded = true;
           checkDone();
@@ -97,6 +140,11 @@ const App = () => {
     const unsubAchievements = subscribeToAchievements(
       (data) => {
         setAchievements(data);
+        try {
+          sessionStorage.setItem('cached_achievements', JSON.stringify(data));
+        } catch (e) {
+          console.warn('Failed to cache achievements in sessionStorage:', e);
+        }
         if (!achievementsLoaded) {
           achievementsLoaded = true;
           checkDone();
@@ -118,15 +166,14 @@ const App = () => {
   // Navigation State
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
 
-  // Theme State - Initialize based on system preference
+  // Theme State - Default to Dark Mode unconditionally
   const [isDarkMode, setIsDarkMode] = useState(() => {
-    // Check if user has a saved preference
-    const saved = localStorage.getItem('theme');
+    localStorage.removeItem('theme'); // Clear stale localStorage overrides
+    const saved = sessionStorage.getItem('theme');
     if (saved) {
       return saved === 'dark';
     }
-    // Otherwise check system preference
-    return window.matchMedia('(prefers-color-scheme: dark)').matches;
+    return true; // Unconditionally default to Dark Mode
   });
 
   useEffect(() => {
@@ -134,11 +181,11 @@ const App = () => {
     if (isDarkMode) {
       document.documentElement.classList.add('dark');
       document.body.classList.add('dark');
-      localStorage.setItem('theme', 'dark');
+      sessionStorage.setItem('theme', 'dark');
     } else {
       document.documentElement.classList.remove('dark');
       document.body.classList.remove('dark');
-      localStorage.setItem('theme', 'light');
+      sessionStorage.setItem('theme', 'light');
     }
 
     // Force repaint to fix backdrop-filter bug in some browsers during theme switch
@@ -158,88 +205,107 @@ const App = () => {
 
   // --- CRUD Operations for CMS ---
   
-  const handleAddProject = async (newProject: Project) => {
+  const handleAddProject = async (newProject: Project): Promise<string | null> => {
     try {
       const projectId = await addProject(newProject);
       if (projectId) {
         const projectWithId = { ...newProject, id: projectId };
         setProjects(prev => [projectWithId, ...prev]);
+        return projectId;
       }
+      return null;
     } catch (error) {
       console.error('Error adding project:', error);
+      return null;
     }
   };
 
-  const handleUpdateProject = async (updatedProject: Project) => {
+  const handleUpdateProject = async (updatedProject: Project): Promise<boolean> => {
     try {
       const projectId = typeof updatedProject.id === 'string' 
         ? updatedProject.id 
         : updatedProject.id?.toString() || '';
       
       if (projectId) {
-        await updateProject(projectId, updatedProject);
-        setProjects(prev => prev.map(p => p.id === updatedProject.id ? updatedProject : p));
+        const success = await updateProject(projectId, updatedProject);
+        if (success) {
+          setProjects(prev => prev.map(p => p.id === updatedProject.id ? updatedProject : p));
+        }
+        return success;
       }
+      return false;
     } catch (error) {
       console.error('Error updating project:', error);
+      return false;
     }
   };
 
-  const handleDeleteProject = async (id: number | string) => {
+  const handleDeleteProject = async (id: number | string): Promise<boolean> => {
     try {
       const projectId = typeof id === 'string' ? id : id?.toString() || '';
       
       if (projectId) {
-        await deleteProject(projectId);
-        setProjects(prev => prev.filter(p => p.id !== id));
+        const success = await deleteProject(projectId);
+        if (success) {
+          setProjects(prev => prev.filter(p => p.id !== id));
+        }
+        return success;
       }
+      return false;
     } catch (error) {
       console.error('Error deleting project:', error);
+      return false;
     }
   };
 
   // --- CRUD Operations for Achievements ---
-  const handleAddAchievement = async (newAchievement: AchievementCardData) => {
+  const handleAddAchievement = async (newAchievement: AchievementCardData): Promise<string | null> => {
     try {
       const achievementId = await addAchievement(newAchievement);
       if (achievementId) {
         const achievementWithId = { ...newAchievement, id: achievementId };
         setAchievements(prev => [achievementWithId, ...prev]);
+        return achievementId;
       } else {
         throw new Error('Achievement was not created');
       }
     } catch (error) {
       console.error('Error adding achievement:', error);
+      return null;
     }
   };
 
-  const handleUpdateAchievement = async (updatedAchievement: AchievementCardData) => {
+  const handleUpdateAchievement = async (updatedAchievement: AchievementCardData): Promise<boolean> => {
     try {
       const achievementId = updatedAchievement.id.toString();
       if (achievementId) {
         const success = await updateAchievement(achievementId, updatedAchievement);
-        if (!success) {
-          throw new Error('Achievement was not updated');
+        if (success) {
+          setAchievements(prev => prev.map(a => a.id === updatedAchievement.id ? updatedAchievement : a));
         }
-        setAchievements(prev => prev.map(a => a.id === updatedAchievement.id ? updatedAchievement : a));
+        return success;
       }
+      return false;
     } catch (error) {
       console.error('Error updating achievement:', error);
+      return false;
     }
   };
 
-  const handleDeleteAchievement = async (id: number | string) => {
+  const handleDeleteAchievement = async (id: number | string): Promise<boolean> => {
     try {
       const achievementId = id.toString();
       if (achievementId) {
         const success = await deleteAchievement(achievementId);
-        if (!success) {
-          throw new Error('Achievement was not deleted');
+        if (success) {
+          setAchievements(prev => prev.filter(a => a.id !== id));
         }
-        setAchievements(prev => prev.filter(a => a.id !== id));
+        return success;
       }
+      return false;
     } catch (error) {
       console.error('Error deleting achievement:', error);
+      return false;
     }
   };
 
@@ -332,9 +398,6 @@ const App = () => {
   }
 
   // 3. Main and Project Detail Views
-  
-  // Filter for published projects
-  const publishedProjects = projects.filter(p => p.status === 'published');
 
   return (
     <>
@@ -342,7 +405,7 @@ const App = () => {
       <AIChat />
 
       {/* Top Right Actions - Shared fixed overlay */}
-      <div className="fixed top-6 right-6 z-[60] flex items-center gap-3">
+      <div className="fixed top-6 right-6 z-60 flex items-center gap-3">
          <a 
             href={`mailto:${DEVELOPER_INFO.email}`}
             className="hidden md:flex items-center gap-2 px-5 py-2.5 bg-slate-900 dark:bg-white text-white dark:text-black text-xs md:text-sm font-medium rounded-full shadow-lg hover:scale-105 transition-transform"
@@ -352,7 +415,7 @@ const App = () => {
           <AudioPlayer />
           <button 
             onClick={toggleTheme}
-            className="p-3 rounded-full bg-white/80 dark:bg-black/75 backdrop-blur-sm border border-white/40 dark:border-neutral-800 shadow-lg text-slate-700 dark:text-neutral-200 hover:scale-110 transition-all"
+            className="p-3 rounded-full bg-white/80 dark:bg-black/75 backdrop-blur-sm border border-white/40 dark:border-neutral-800 shadow-lg text-slate-700 dark:text-neutral-200 hover:scale-110 transition-all outline-none focus:outline-none focus:ring-0 focus-visible:outline-none cursor-pointer"
           >
             {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
           </button>
@@ -371,18 +434,27 @@ const App = () => {
         <main className="w-full relative min-h-screen bg-stone-50 dark:bg-black transition-colors duration-700">
           <Navbar projects={projects} />
           
-          {/* Parallax Hero Wrapper (Using fixed instead of sticky to prevent Safari/Chrome flashing bugs) */}
-          <div className="fixed top-0 left-0 h-screen w-full z-0 overflow-hidden transform-gpu pointer-events-none">
+          {/* Parallax Hero Wrapper - Hidden when scrolled past to save 100% GPU compositor load */}
+          <div className={`fixed top-0 left-0 h-screen w-full z-0 overflow-hidden transform-gpu pointer-events-none ${isHeroPast ? 'invisible opacity-0' : 'visible opacity-100'} transition-opacity duration-300`}>
             <div className="pointer-events-auto h-full w-full">
               <Hero />
             </div>
           </div>
           
-          {/* Main Content Wrapper (Slides over Hero) */}
-          <div className="relative z-20 isolate transform-gpu bg-stone-50 dark:bg-black transition-colors duration-700 mt-[100vh]">
+          {/* Main Content Wrapper (Slides over Hero with Continuous Seamless Aurora Background) */}
+          <div className="relative z-20 isolate transform-gpu bg-stone-50 dark:bg-black transition-colors duration-700 mt-[100vh] overflow-hidden">
+            {/* Global Continuous Aurora Gradient Patches (Strictly on -z-10 background layer behind all content) */}
+            <div className="absolute inset-0 w-full h-full pointer-events-none -z-10 overflow-hidden">
+              <div className="absolute top-[2%] left-[-15%] w-[70%] h-[18%] bg-blue-200/20 dark:bg-blue-600/12 rounded-full blur-[130px] mix-blend-multiply dark:mix-blend-screen pointer-events-none" />
+              <div className="absolute top-[18%] right-[-15%] w-[65%] h-[18%] bg-purple-200/20 dark:bg-purple-600/12 rounded-full blur-[130px] mix-blend-multiply dark:mix-blend-screen pointer-events-none" />
+              <div className="absolute top-[34%] left-[5%] w-[60%] h-[18%] bg-emerald-200/20 dark:bg-emerald-600/10 rounded-full blur-[130px] mix-blend-multiply dark:mix-blend-screen pointer-events-none" />
+              <div className="absolute top-[50%] right-[-10%] w-[65%] h-[18%] bg-blue-200/20 dark:bg-blue-600/12 rounded-full blur-[130px] mix-blend-multiply dark:mix-blend-screen pointer-events-none" />
+              <div className="absolute top-[66%] left-[-10%] w-[60%] h-[18%] bg-purple-200/20 dark:bg-purple-600/12 rounded-full blur-[130px] mix-blend-multiply dark:mix-blend-screen pointer-events-none" />
+              <div className="absolute top-[82%] right-[-5%] w-[70%] h-[18%] bg-emerald-200/20 dark:bg-emerald-600/10 rounded-full blur-[130px] mix-blend-multiply dark:mix-blend-screen pointer-events-none" />
+            </div>
+
             {/* Opaque seam cover — prevents fixed hero from ever showing through at the join */}
             <div className="absolute -top-1 left-0 w-full h-4 bg-stone-50 dark:bg-black transition-colors duration-700 z-10" />
-            <Achievement achievements={achievements.filter(a => a.status === 'published')} />
             
             <div id="projects">
               {publishedProjects.length === 0 ? (
@@ -396,6 +468,8 @@ const App = () => {
                 />
               )}
             </div>
+            <AchievementSlider achievements={achievements} />
+            {/* <Packages /> */}
             <Process />
             <Expertise />
             <Footer onAdminClick={() => setShowAdminLogin(true)} />

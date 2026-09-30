@@ -12,6 +12,7 @@ interface NavbarProps {
 export const Navbar = ({ projects = [] }: NavbarProps) => {
   const navItems = [
     { label: 'Projects', id: 'projects' },
+    { label: 'Achievements', id: 'achievement' },
     { label: 'Path Way', id: 'process' },
     { label: 'Expertise', id: 'expertise' }
   ];
@@ -49,7 +50,7 @@ export const Navbar = ({ projects = [] }: NavbarProps) => {
           className="w-10 h-10 md:w-14 md:h-14 rounded-full border border-white/30 dark:border-white/20 shadow-lg bg-white/80 dark:bg-black/75 backdrop-blur-sm overflow-hidden hover:scale-105 transition-transform duration-300 cursor-pointer"
         >
           <img 
-            src="/image.png" 
+            src="/image.webp" 
             alt={DEVELOPER_INFO.name}
             className="w-full h-full object-cover"
             decoding="async"

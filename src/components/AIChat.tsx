@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { MessageSquare, X, Send, Brain, Loader2 } from 'lucide-react';
 import { ChatMessage } from '../types';
 import { DEVELOPER_INFO } from '../data';
-import { sendChatMessage } from '../src/services/openclawService';
+import { sendChatMessage } from '../services/openclawService';
 
 export const AIChat = () => {
   const [isOpen, setIsOpen] = useState(false);

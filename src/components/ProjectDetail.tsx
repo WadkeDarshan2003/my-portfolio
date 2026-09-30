@@ -92,8 +92,9 @@ export const ProjectDetail = ({ project, onBack, isPreview = false }: ProjectDet
             </div>
 
             <h1
-              className="text-4xl md:text-7xl lg:text-8xl font-poppins font-semibold text-slate-900 dark:text-white leading-tight animate-fade-in-up"
+              className="text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-poppins font-semibold text-slate-900 dark:text-white leading-tight animate-fade-in-up truncate"
               style={{ animationDelay: '0.2s' }}
+              title={project.title}
             >
               {project.title || "Project Title"}
             </h1>
@@ -103,15 +104,17 @@ export const ProjectDetail = ({ project, onBack, isPreview = false }: ProjectDet
 
       {/* Main Image */}
       <div className="w-full px-4 md:px-6 -mt-8 md:-mt-12 relative z-10">
-        <div className="max-w-6xl mx-auto aspect-video md:aspect-auto md:h-[70vh] rounded-2xl md:rounded-[2rem] overflow-hidden shadow-md border-2 md:border-4 border-white dark:border-neutral-900 animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
+        <div className="max-w-6xl mx-auto flex items-center justify-center rounded-2xl md:rounded-4xl overflow-hidden shadow-xl border-2 md:border-4 border-white dark:border-neutral-900 bg-slate-900/40 dark:bg-neutral-950/80 backdrop-blur-sm animate-fade-in-up max-h-[75vh]" style={{ animationDelay: '0.3s' }}>
           {project.image ? (
             <OptimizedImage
               src={project.image}
               alt={project.title}
-              className="w-full h-full object-cover md:object-cover transition-transform duration-400 hover:scale-102 will-change-transform"
+              priority={true}
+              sizes="(max-width: 768px) 100vw, 1200px"
+              className="w-full h-full max-h-[75vh] object-contain transition-transform duration-400 hover:scale-[1.01] will-change-transform"
             />
           ) : (
-            <div className="w-full h-full bg-slate-100 dark:bg-neutral-800 flex items-center justify-center text-slate-300 dark:text-neutral-600">No Image Available</div>
+            <div className="w-full h-48 md:h-96 bg-slate-100 dark:bg-neutral-800 flex items-center justify-center text-slate-300 dark:text-neutral-600">No Image Available</div>
           )}
         </div>
       </div>
@@ -261,6 +264,7 @@ export const ProjectDetail = ({ project, onBack, isPreview = false }: ProjectDet
                   <OptimizedImage
                     src={img}
                     alt={`${project.title} screenshot ${idx + 1}`}
+                    sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
                     className="w-full h-auto object-cover transition-transform duration-700 group-hover:scale-[1.1]"
                   />
                   {/* Subtle overlay on hover */}
@@ -275,12 +279,12 @@ export const ProjectDetail = ({ project, onBack, isPreview = false }: ProjectDet
       {/* Image Lightbox - Using Portal to escape stacking context */}
       {selectedImg && createPortal(
         <div
-          className="fixed inset-0 z-[100000] w-screen h-screen overflow-hidden flex flex-col items-center justify-center backdrop-blur-3xl transition-all duration-500 p-4"
+          className="fixed inset-0 z-100000 w-screen h-screen overflow-hidden flex flex-col items-center justify-center backdrop-blur-3xl transition-all duration-500 p-4"
           style={{ touchAction: 'none' }}
           onClick={() => setSelectedImg(null)}
         >
           <div
-            className="flex flex-col items-center justify-center max-w-full max-h-full relative z-[100001]"
+            className="flex flex-col items-center justify-center max-w-full max-h-full relative z-100001"
             onClick={(e) => e.stopPropagation()}
           >
             <img
@@ -296,7 +300,7 @@ export const ProjectDetail = ({ project, onBack, isPreview = false }: ProjectDet
                 e.stopPropagation();
                 setSelectedImg(null);
               }}
-              className="mt-1 md:mt-2 px-6 py-2 text-black dark:text-white hover:opacity-60 transition-all cursor-pointer font-bold tracking-tight text-[11px] md:text-sm z-[100002] active:scale-95"
+              className="mt-1 md:mt-2 px-6 py-2 text-black dark:text-white hover:opacity-60 transition-all cursor-pointer font-bold tracking-tight text-[11px] md:text-sm z-100002 active:scale-95"
               aria-label="Close image preview"
             >
               Close

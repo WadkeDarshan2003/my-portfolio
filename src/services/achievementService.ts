@@ -2,6 +2,7 @@ import {
   collection,
   addDoc,
   updateDoc,
+  setDoc,
   deleteDoc,
   doc,
   getDocs,
@@ -9,7 +10,7 @@ import {
   onSnapshot,
 } from 'firebase/firestore';
 import { db } from '../config/firebase';
-import { AchievementCardData } from '../../types';
+import { AchievementCardData } from '../types';
 
 const ACHIEVEMENTS_COLLECTION = 'achievements';
 
@@ -54,15 +55,21 @@ const dedupeAchievements = (achievements: AchievementCardData[]) => {
   });
 };
 
+const mapDocToAchievement = (doc: any): AchievementCardData => {
+  const data = doc.data();
+  const { id: _storedId, ...cleanData } = data;
+  return {
+    ...cleanData,
+    id: doc.id,
+  } as AchievementCardData;
+};
+
 export async function getAchievements(): Promise<AchievementCardData[]> {
   try {
     console.log('Fetching achievements from Firebase...');
     const snapshot = await getDocs(collection(db, ACHIEVEMENTS_COLLECTION));
     
-    return dedupeAchievements(sortAchievements(snapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-    } as AchievementCardData))));
+    return dedupeAchievements(sortAchievements(snapshot.docs.map(mapDocToAchievement)));
   } catch (error) {
     console.error('Error fetching achievements:', error);
     return [];
@@ -78,10 +85,7 @@ export function subscribeToAchievements(
     collection(db, ACHIEVEMENTS_COLLECTION),
     { includeMetadataChanges: true },
     (snapshot) => {
-      const achievements = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      } as AchievementCardData));
+      const achievements = snapshot.docs.map(mapDocToAchievement);
       
       onData(dedupeAchievements(sortAchievements(achievements)));
     },
@@ -95,10 +99,10 @@ export function subscribeToAchievements(
 }
 
 export async function addAchievement(
-  achievement: Omit<AchievementCardData, 'id'>
+  achievement: Omit<AchievementCardData, 'id'> | AchievementCardData
 ): Promise<string | null> {
   try {
-    const { id, ...achievementData } = achievement as AchievementCardData;
+    const { id: _storedId, ...achievementData } = achievement as any;
     const docRef = await addDoc(collection(db, ACHIEVEMENTS_COLLECTION), {
       ...achievementData,
       createdAt: Timestamp.now(),
@@ -117,11 +121,16 @@ export async function updateAchievement(
 ): Promise<boolean> {
   try {
     const docRef = doc(db, ACHIEVEMENTS_COLLECTION, id);
-    const { id: _id, ...updateData } = updates;
-    await updateDoc(docRef, {
-      ...updateData,
-      updatedAt: Timestamp.now(),
-    });
+    const { id: _storedId, createdAt, ...updateData } = updates as any;
+    await setDoc(
+      docRef,
+      {
+        ...updateData,
+        ...(createdAt ? { createdAt } : { createdAt: Timestamp.now() }),
+        updatedAt: Timestamp.now(),
+      },
+      { merge: true }
+    );
     return true;
   } catch (error) {
     console.error('Failed to update achievement:', error);

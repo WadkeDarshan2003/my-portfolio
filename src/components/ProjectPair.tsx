@@ -2,30 +2,7 @@ import React, { useState, useRef } from 'react';
 import { Project } from '../types';
 import { OptimizedImage } from './OptimizedImage';
 import { Clock, Layers, ArrowUpRight } from 'lucide-react';
-
-interface ProjectPairProps {
-  projectLeft: Project;
-  projectRight?: Project;
-  onProjectClick: (project: Project) => void;
-}
-
-// Helper to generate srcSet for Unsplash images for better performance
-const generateSrcSet = (url: string) => {
-  if (!url || !url.includes('images.unsplash.com')) return undefined;
-  try {
-     const newUrl = new URL(url);
-     const widths = [320, 640, 768, 1024, 1280, 1536];
-     return widths.map(w => {
-       newUrl.searchParams.set('w', w.toString());
-       newUrl.searchParams.set('q', '75');
-       newUrl.searchParams.set('auto', 'format');
-       newUrl.searchParams.set('fit', 'crop');
-       return `${newUrl.toString()} ${w}w`;
-     }).join(', ');
-  } catch (e) {
-    return undefined;
-  }
-};
+import { generateSrcSet } from '../utils/cdn';
 
 const truncateWords = (text: string | undefined, maxWords: number) => {
   if (!text) return "Project description goes here...";
@@ -145,7 +122,7 @@ export const ProjectCard = ({
              )}
 
              {/* Info Overlay at the bottom of the image */}
-             <div className="absolute bottom-0 left-0 w-full p-4 md:p-8 pt-24 bg-gradient-to-t from-black/90 via-black/40 to-transparent z-10 flex flex-col justify-end transform transition-transform duration-500">
+             <div className="absolute bottom-0 left-0 w-full p-4 md:p-8 pt-24 bg-linear-to-t from-black/90 via-black/40 to-transparent z-10 flex flex-col justify-end transform transition-transform duration-500">
                 <h3 className="text-3xl md:text-4xl lg:text-5xl font-poppins font-semibold text-white mb-2 md:mb-3 leading-tight drop-shadow-md">
                   {project.title || "Project Title"}
                 </h3>
@@ -161,11 +138,16 @@ export const ProjectCard = ({
            </div>
         </div>
 
-
       </div>
     </div>
   );
 };
+
+interface ProjectPairProps {
+  projectLeft: Project;
+  projectRight?: Project;
+  onProjectClick: (project: Project) => void;
+}
 
 export const ProjectPair: React.FC<ProjectPairProps> = ({ projectLeft, projectRight, onProjectClick }) => {
   return (
